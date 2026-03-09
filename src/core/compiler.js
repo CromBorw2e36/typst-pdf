@@ -10,9 +10,19 @@ let initialized = false;
 let compilerInstance = null;
 let typstSnippet = null;
 
-// URL tương đối với gốc dev server
-const COMPILER_WASM_URL = '/node_modules/@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm';
-const RENDERER_WASM_URL = '/node_modules/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm';
+// Cấu hình URL mặc định (hỗ trợ CDN jsDelivr khi không có node_modules)
+const CDN_BASE = 'https://cdn.jsdelivr.net/npm';
+const TYPST_VERSION = '0.7.0-rc2';
+
+// Hàm helper để xác định base URL (local dev vs production/CDN)
+function getBaseUrl(pkgName, localPath) {
+    // Nếu đang chạy trong môi trường có import map (như CDN demo) hoặc URL production
+    if (window.location.protocol !== 'file:' && !window.location.href.includes('localhost') && !window.location.href.includes('127.0.0.1')) {
+        return `${CDN_BASE}/${pkgName}@${TYPST_VERSION}/${localPath}`;
+    }
+    // Fallback cho local (phụ thuộc Vite/dev server)
+    return `/node_modules/${pkgName}/${localPath}`;
+}
 
 async function loadWasmBinary(url) {
     const response = await fetch(url);
@@ -22,10 +32,18 @@ async function loadWasmBinary(url) {
 
 async function setupRendererWasm() {
     // Import module JS (không WASM)
-    const rendererModule = await import('/node_modules/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer.mjs');
+    // Tận dụng dynamic import map nếu có, hoặc fallback
+    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-renderer', 'pkg/typst_ts_renderer.js');
+    const wasmUrl = getBaseUrl('@myriaddreamin/typst-ts-renderer', 'pkg/typst_ts_renderer_bg.wasm');
+    
+    // NOTE: Khi có importmap, fetch url moduleUrl có thể fail nếu trình duyệt tự ưu tiên map
+    // Vì vậy ta dùng import('@myriaddreamin/typst.ts/renderer') nhưng thư viện này không expose default dễ dàng
+    // Do đó import trực tiếp URL qua CDN
+    const rendererModule = await import(/* @vite-ignore */ moduleUrl);
+    
     if (rendererModule.setImportWasmModule) {
         rendererModule.setImportWasmModule(async (wasmName, _url) => {
-            return await loadWasmBinary(RENDERER_WASM_URL);
+            return await loadWasmBinary(wasmUrl);
         });
     }
     // Trigger init
@@ -36,10 +54,13 @@ async function setupRendererWasm() {
 }
 
 async function setupCompilerWasm() {
-    const compilerModule = await import('/node_modules/@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler.mjs');
+    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-web-compiler', 'pkg/typst_ts_web_compiler.js');
+    const wasmUrl = getBaseUrl('@myriaddreamin/typst-ts-web-compiler', 'pkg/typst_ts_web_compiler_bg.wasm');
+    
+    const compilerModule = await import(/* @vite-ignore */ moduleUrl);
     if (compilerModule.setImportWasmModule) {
         compilerModule.setImportWasmModule(async (wasmName, _url) => {
-            return await loadWasmBinary(COMPILER_WASM_URL);
+            return await loadWasmBinary(wasmUrl);
         });
     }
     if (compilerModule.default) {
@@ -58,8 +79,9 @@ export async function initCompiler() {
             setupCompilerWasm()
         ]);
 
-        // Import TypstSnippet từ typst.ts (JS only, không có dynamic WASM import)
-        const snippetMod = await import('/node_modules/@myriaddreamin/typst.ts/dist/esm/contrib/snippet.mjs');
+        // Import TypstSnippet từ typst.ts 
+        const snippetUrl = getBaseUrl('@myriaddreamin/typst.ts', 'dist/esm/contrib/snippet.js');
+        const snippetMod = await import(/* @vite-ignore */ snippetUrl);
         
         typstSnippet = snippetMod.$typst;
         initialized = true;
