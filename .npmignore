@@ -1,0 +1,12 @@
+# Exclude from npm publish
+node_modules/
+data/
+*.log
+.git*
+.vscode/
+
+# Include these explicitly via "files" in package.json
+# dist/
+# src/
+# public/fonts/
+# README.md

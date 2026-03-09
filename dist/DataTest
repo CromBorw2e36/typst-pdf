@@ -1,0 +1,166 @@
+// --- 1. ĐỊNH NGHĨA DỮ LIỆU ---
+#let invoice_num = "HD-2026-007"
+#let customer_name = "Nguyễn Khánh"
+#let items = (
+  (name: "Phát triển phần mềm Quản lý Cafe", qty: 1, price: 15000000, note: "Bao gồm ứng dụng POS và App Khách hàng"),
+  (name: "Phí khởi tạo máy chủ Cloud", qty: 1, price: 2500000, note: "Bảo hành 1 năm"),
+  (name: "Tư vấn thiết kế UI/UX Mobile App", qty: 2, price: 5000000, note: ""),
+  (name: "Đào tạo nhân sự sử dụng hệ thống", qty: 5, price: 500000, note: "Các buổi đào tạo tại điểm bán"),
+  (name: "Quản trị cơ sở dữ liệu hàng tháng", qty: 12, price: 800000, note: "Gói hỗ trợ từ xa"),
+  (name: "Tên miền *.com.vn, 3 năm", qty: 1, price: 750000, note: ""),
+  (name: "Chiến dịch Marketing Facebook Ads", qty: 1, price: 10000000, note: "Giai đoạn khởi chạy"),
+  (name: "Thiết kế bộ nhận diện thương hiệu", qty: 1, price: 30000000, note: "Logo, Menu, Standee"),
+  (name: "Module báo cáo Sales & Doanh thu", qty: 1, price: 8500000, note: "Real-time dashboard"),
+  (name: "Máy in bill nhiệt 80mm K58", qty: 4, price: 1200000, note: ""),
+  (name: "Ngăn kéo đựng tiền 4 ngăn", qty: 2, price: 550000, note: ""),
+  (name: "Triển khai phần mềm tới 5 chi nhánh", qty: 5, price: 2000000, note: "Chi phí đi lại và set up"),
+  (name: "Mở rộng tính năng Tích điểm hạng thành viên", qty: 1, price: 6000000, note: ""),
+  (name: "Nâng cấp bảo mật tường lửa WAF", qty: 1, price: 4500000, note: ""),
+  (name: "Dịch vụ Content/Seo 3 tháng", qty: 3, price: 4000000, note: "Tin tức trên diễn đàn"),
+  (name: "Hỗ trợ khách hàng 24/7 (Gói 1 năm)", qty: 1, price: 12000000, note: ""),
+  (name: "App Mobile cho Chủ Cửa hàng (iOS & Android)", qty: 1, price: 25000000, note: ""),
+  (name: "Máy quét mã vạch 2D cầm tay", qty: 3, price: 850000, note: ""),
+  (name: "Module xuất hóa đơn điện tử tự động", qty: 1, price: 7000000, note: "Tích hợp VNPT/Viettel"),
+  (name: "Gói bảo trì hệ thống định kỳ", qty: 4, price: 1500000, note: "Hàng quý"),
+)
+
+// --- 2. HÀM HỖ TRỢ (UTILITIES) ---
+// Đã sửa 'calc.mod' thành 'calc.rem'
+#let format_currency(n) = {
+  let s = str(n)
+  let out = ""
+  for i in range(s.len()) {
+    if calc.rem(s.len() - i, 3) == 0 and i != 0 {
+      out += "."
+    }
+    out += s.at(i)
+  }
+  out + " VNĐ"
+}
+
+#let subtotal = items.map(it => it.price * it.qty).sum()
+#let vat = subtotal * 0.1
+#let total = subtotal + vat
+
+// --- 3. CẤU HÌNH TRANG ---
+#set page(
+  paper: "a4",
+  margin: (top: 3.5cm, bottom: 2.5cm, left: 2.2cm, right: 2.2cm),
+  header-ascent: 20%,
+  header: [
+    #set text(size: 9pt, fill: luma(80))
+    #grid(
+      columns: (1fr, auto),
+      align(left)[
+        *CÔNG TY TNHH DỊCH VỤ XYZ* \
+        Mã số thuế: 0312345678 \
+        123 Đường ABC, Phường 1, TP. Tây Ninh \
+        Email: contact\@xyz.vn | Hotline: 0909 123 456
+      ],
+      align(right)[
+        #image("http://localhost:3001/logo-HungDuy-smal.jpg", width: 2cm, height: 2cm, fit: "contain")
+      ]
+    )
+    #v(3mm)
+    #line(length: 100%, stroke: 0.6pt + luma(80))
+  ],
+  footer: [
+    #set text(size: 8pt, fill: luma(120))
+    #align(center)[
+      #context [
+        Trang #counter(page).display() / #counter(page).final().at(0)
+      ]
+    ]
+  ]
+)
+
+// Đã bỏ thuộc tính font để tránh lỗi cảnh báo trên MasaxTypst
+#set text(size: 11pt, lang: "vi")
+
+// --- 4. NỘI DUNG CHÍNH ---
+#align(center)[
+  #v(0.5cm)
+  #block(stroke: (bottom: 1.6pt + rgb("#1a3c5e")), inset: (bottom: 0.5em))[
+    #text(size: 20pt, weight: "bold", fill: rgb("#1a3c5e"))[HÓA ĐƠN DỊCH VỤ]
+  ]
+  #v(2mm)
+  #text(size: 10pt, fill: gray)[Số: #invoice_num | Ngày lập: 07/03/2026]
+]
+
+#v(1cm)
+
+#grid(
+  columns: (1fr, 1fr),
+  gutter: 1.2cm,
+  [
+    *Khách hàng:* \
+    #text(size: 12pt, weight: "bold")[#customer_name] \
+    Địa chỉ: TP. Tây Ninh, Việt Nam \
+    MST: 0102030405
+  ],
+  align(right)[
+    *Thông tin thanh toán* \
+    Hạn thanh toán: 15/03/2026 \
+    Phương thức: Chuyển khoản \
+    #text(fill: red.darken(20%))[*Chưa thanh toán*]
+  ]
+)
+
+#v(1cm)
+
+// --- 5. BẢNG DỊCH VỤ ---
+#let accent = rgb("#2c5282")
+#table(
+  columns: (1fr, 1.2cm, 2.8cm, 3.2cm),
+  align: (left, center, right, right),
+  stroke: none,
+  fill: (x, y) => if y == 0 { rgb("#f5f7fa") } else if calc.even(y) { rgb("#fafbfc") } else { white },
+  inset: 10pt,
+  table.header(
+    [*Dịch vụ / Nội dung*], [*SL*], [*Đơn giá*], [*Thành tiền*],
+  ),
+  table.hline(stroke: 1.2pt + accent),
+  
+  ..for item in items {
+    (
+      [#item.name #(if item.note != "" [ \ #text(size: 9pt, style: "italic", fill: gray)[(#item.note)]])],
+      [#item.qty],
+      [#format_currency(item.price)],
+      [*#format_currency(item.price * item.qty)*]
+    )
+  },
+  table.hline(stroke: 0.7pt + black),
+)
+
+// --- 6. TỔNG KẾT ---
+#v(0.5cm)
+#align(right)[
+  #box(width: 8.5cm, inset: 12pt, radius: 4pt, stroke: 1pt + accent, fill: rgb("#f8fafc"))[
+    #grid(
+      columns: (1fr, auto),
+      row-gutter: 8pt,
+      [Tạm tính:], [#format_currency(subtotal)],
+      [Thuế GTGT (10%):], [#format_currency(vat)],
+      [#text(weight: "bold", fill: accent, size: 12pt)[TỔNG THANH TOÁN:]], 
+      [#text(weight: "bold", fill: accent, size: 12pt)[#format_currency(total)]]
+    )
+  ]
+]
+
+#v(1cm)
+
+// --- 7. GHI CHÚ & THANH TOÁN ---
+#rect(width: 100%, inset: 12pt, fill: luma(245), stroke: (left: 4pt + accent))[
+  *Thông tin chuyển khoản:* \
+  Ngân hàng: *Vietcombank – Chi nhánh Tây Ninh* \
+  Số TK: *0011 0012 34567* \
+  Chủ TK: *CÔNG TY TNHH DỊCH VỤ XYZ* \
+  Nội dung: *HD #invoice_num - #customer_name*
+]
+
+#v(1fr)
+#align(center)[
+  #text(size: 9.5pt, fill: gray, style: "italic")[
+    Cảm ơn Quý khách đã tin tưởng sử dụng dịch vụ!
+  ]
+]

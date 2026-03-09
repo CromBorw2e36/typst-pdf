@@ -1,0 +1,61 @@
+{
+  "name": "typst-pdf",
+  "version": "1.0.0",
+  "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, Handlebars templates and Vietnamese support",
+  "type": "module",
+  "main": "dist/typst-pdf.umd.cjs",
+  "module": "dist/typst-pdf.js",
+  "exports": {
+    ".": {
+      "import": "./dist/typst-pdf.js",
+      "require": "./dist/typst-pdf.umd.cjs"
+    },
+    "./fonts/*": "./public/fonts/*"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && npm run build:lib && npm run build:standalone && npm run build:full",
+    "build:lib": "vite build --mode lib",
+    "build:standalone": "vite build --mode standalone",
+    "build:full": "vite build --mode full",
+    "preview": "vite preview",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "pdf",
+    "template",
+    "typst",
+    "wasm",
+    "vietnamese",
+    "pdf-generator",
+    "typst-to-pdf",
+    "template-engine"
+  ],
+  "author": "CromBorw2e36",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CromBorw2e36/draw-pdf.git",
+    "directory": "pdf-builder"
+  },
+  "bugs": {
+    "url": "https://github.com/CromBorw2e36/draw-pdf/issues"
+  },
+  "homepage": "https://cromborw2e36.github.io/draw-pdf/",
+  "devDependencies": {
+    "vite": "^5.4.11",
+    "vite-plugin-wasm": "^3.5.0"
+  },
+  "dependencies": {
+    "@codemirror/lang-javascript": "^6.2.5",
+    "@myriaddreamin/typst-ts-renderer": "^0.7.0-rc2",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
+    "@myriaddreamin/typst.ts": "^0.7.0-rc2",
+    "codemirror": "^6.0.2",
+    "handlebars": "^4.7.8"
+  }
+}
