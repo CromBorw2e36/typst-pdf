@@ -3405,7 +3405,7 @@ async function Jh() {
         Kp(),
         Up()
       ]);
-      Us = (await import(Hi("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.js"))).$typst, Jl = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
+      Us = (await import(Hi("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, Jl = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
     } catch (n) {
       throw console.error("MasaxTypst: Failed to init compiler:", n), n;
     }

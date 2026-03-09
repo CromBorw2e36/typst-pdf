@@ -80,7 +80,7 @@ export async function initCompiler() {
         ]);
 
         // Import TypstSnippet từ typst.ts 
-        const snippetUrl = getBaseUrl('@myriaddreamin/typst.ts', 'dist/esm/contrib/snippet.js');
+        const snippetUrl = getBaseUrl('@myriaddreamin/typst.ts', 'dist/esm/contrib/snippet.mjs');
         const snippetMod = await import(/* @vite-ignore */ snippetUrl);
         
         typstSnippet = snippetMod.$typst;

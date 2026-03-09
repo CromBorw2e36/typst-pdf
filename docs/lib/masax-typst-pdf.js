@@ -70,7 +70,7 @@ async function v() {
         _(),
         W()
       ]);
-      h = (await import(d("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.js"))).$typst, w = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
+      h = (await import(d("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, w = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
     } catch (n) {
       throw console.error("MasaxTypst: Failed to init compiler:", n), n;
     }
