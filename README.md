@@ -139,6 +139,11 @@ Các phiên bản sau khi build:
 - `dist/masax-typst-pdf.full.js`: Bản bundle tích hợp tất-cả-trong-một.
 - `dist/masax-typst-pdf.standalone.umd.cjs`: Bản UMD dùng được cho Node.js hoặc RequireJS.
 
+```bash
+# Build và copy sang docs
+npm run build ; if ($?) { Copy-Item -Path ".\dist\*.js", ".\dist\*.cjs" -Destination ".\docs\lib\" -Force }
+```
+
 ## 📝 License
 
 MIT
