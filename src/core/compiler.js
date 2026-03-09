@@ -33,7 +33,7 @@ async function loadWasmBinary(url) {
 async function setupRendererWasm() {
     // Import module JS (không WASM)
     // Tận dụng dynamic import map nếu có, hoặc fallback
-    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-renderer', 'pkg/typst_ts_renderer.js');
+    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-renderer', 'pkg/typst_ts_renderer.mjs');
     const wasmUrl = getBaseUrl('@myriaddreamin/typst-ts-renderer', 'pkg/typst_ts_renderer_bg.wasm');
     
     // NOTE: Khi có importmap, fetch url moduleUrl có thể fail nếu trình duyệt tự ưu tiên map
@@ -54,7 +54,7 @@ async function setupRendererWasm() {
 }
 
 async function setupCompilerWasm() {
-    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-web-compiler', 'pkg/typst_ts_web_compiler.js');
+    const moduleUrl = getBaseUrl('@myriaddreamin/typst-ts-web-compiler', 'pkg/typst_ts_web_compiler.mjs');
     const wasmUrl = getBaseUrl('@myriaddreamin/typst-ts-web-compiler', 'pkg/typst_ts_web_compiler_bg.wasm');
     
     const compilerModule = await import(/* @vite-ignore */ moduleUrl);

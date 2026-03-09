@@ -50,14 +50,14 @@ async function C(n) {
   return await t.arrayBuffer();
 }
 async function _() {
-  const n = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.js"), t = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
+  const n = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.mjs"), t = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
     /* @vite-ignore */
     n
   );
   return e.setImportWasmModule && e.setImportWasmModule(async (r, a) => await C(t)), e.default && await e.default(), e;
 }
 async function W() {
-  const n = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.js"), t = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
+  const n = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.mjs"), t = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
     /* @vite-ignore */
     n
   );
