@@ -1,6 +1,6 @@
 {
   "name": "typst-pdf",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, Handlebars templates and Vietnamese support",
   "type": "module",
   "main": "dist/typst-pdf.umd.cjs",
@@ -39,13 +39,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CromBorw2e36/draw-pdf.git",
+    "url": "git+https://github.com/CromBorw2e36/typst-pdf.git",
     "directory": "pdf-builder"
   },
   "bugs": {
-    "url": "https://github.com/CromBorw2e36/draw-pdf/issues"
+    "url": "https://github.com/CromBorw2e36/typst-pdf/issues"
   },
-  "homepage": "https://cromborw2e36.github.io/draw-pdf/",
+  "homepage": "https://cromborw2e36.github.io/typst-pdf/",
   "devDependencies": {
     "vite": "^5.4.11",
     "vite-plugin-wasm": "^3.5.0"
