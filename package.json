@@ -1,6 +1,6 @@
 {
   "name": "typst-pdf",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, Handlebars templates and Vietnamese support",
   "type": "module",
   "main": "dist/typst-pdf.umd.cjs",
