@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Masax Typst PDF Builder</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #e9ecef;
+      }
+      #app {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .header {
+        padding: 10px 20px;
+        background: #212529;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 10;
+        flex-shrink: 0;
+      }
+      .header h3 {
+        margin: 0;
+        font-family: system-ui, sans-serif;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+        font-size: 1rem;
+      }
+      .header .actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .header button {
+        padding: 7px 18px;
+        background: #0d6efd;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: background 0.2s;
+      }
+      .header button:hover {
+        background: #0b5ed7;
+      }
+      .header button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+      }
+      .header .status {
+        font-size: 0.8rem;
+        color: #adb5bd;
+        font-style: italic;
+      }
+      #workspace {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="header">
+        <h3>✦ Masax Typst PDF Editor</h3>
+        <div class="actions">
+          <span class="status" id="status-msg">Đang khởi tạo Typst...</span>
+          <button id="btn-load-bp" style="background: #6c757d">
+            Load Blueprint
+          </button>
+          <button id="btn-down-bp" style="background: #198754">
+            Download Blueprint
+          </button>
+          <button id="btn-export">Export PDF</button>
+          <input
+            type="file"
+            id="file-bp"
+            accept=".json"
+            style="display: none"
+          />
+        </div>
+      </div>
+      <div id="workspace"></div>
+    </div>
+
+    <!-- Nhúng Import Map cho các thư viện Typst -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@myriaddreamin/typst.ts": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/index.js",
+          "@myriaddreamin/typst.ts/contrib/snippet": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/contrib/snippet.js",
+          "@myriaddreamin/typst.ts/contrib/global-compiler": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/contrib/global-compiler.js",
+          "@myriaddreamin/typst.ts/contrib/global-renderer": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/contrib/global-renderer.js",
+          "@myriaddreamin/typst.ts/compiler": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/compiler.js",
+          "@myriaddreamin/typst.ts/renderer": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/renderer.js",
+          "@myriaddreamin/typst-ts-web-compiler": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2/pkg/typst_ts_web_compiler.js",
+          "@myriaddreamin/typst-ts-renderer": "https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-renderer@0.7.0-rc2/pkg/typst_ts_renderer.js"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import { MasaxWorkspace } from "./lib/masax-typst-pdf.full.js";
+
+      const initialTemplate = `#set page(paper: "a4", margin: 2cm)
+      #set text(size: 12pt)
+
+      = Hoá đơn dịch vụ
+
+      *Khách hàng:* {{name}} \\
+      *Ngày:* {{date}}
+
+      #v(8mm)
+
+      #table(
+        columns: (1fr, auto, auto),
+        fill: (x, y) => if y == 0 { luma(220) } else { white },
+        table.header(
+          [*Dịch vụ*], [*Đơn giá*], [*SL*],
+        ),
+        {{#each items}}[{{name}}], [{{formatCurrency price}}], [{{qty}}],
+        {{/each}}
+      )
+
+      #v(8mm)
+
+      #align(right)[
+        *Tổng cộng:* *{{formatCurrency total}}*
+      ]`;
+
+      const sampleData = {
+        name: "Masax Studio",
+        date: new Date().toLocaleDateString("vi-VN"),
+        items: [
+          { name: "Thiết kế Giao diện Web", price: 15000000, qty: 1 },
+          { name: "Typst PDF Generator", price: 8000000, qty: 1 },
+          { name: "Hosting 1 năm", price: 1200000, qty: 1 },
+        ],
+        total: 24200000,
+      };
+
+      const statusMsg = document.getElementById("status-msg");
+      const workspaceEl = document.getElementById("workspace");
+
+      // Khởi tạo workspace
+      const workspace = new MasaxWorkspace(workspaceEl, {
+        initialTemplate,
+        initialData: sampleData,
+        onStatusChange: (msg) => {
+          statusMsg.textContent = msg;
+        },
+      });
+
+      document
+        .getElementById("btn-export")
+        .addEventListener("click", async () => {
+          const btn = document.getElementById("btn-export");
+          btn.textContent = "Đang tạo...";
+          btn.disabled = true;
+          statusMsg.textContent = "Đang biên dịch PDF...";
+          try {
+            const pdfBlob = await workspace.exportPDF();
+            const url = URL.createObjectURL(pdfBlob);
+            window.open(url, "_blank");
+            statusMsg.textContent = "PDF sẵn sàng";
+          } catch (err) {
+            alert("Lỗi tạo PDF: " + err.message);
+            statusMsg.textContent = "Lỗi: " + err.message;
+          } finally {
+            btn.textContent = "Export PDF";
+            btn.disabled = false;
+          }
+        });
+
+      // ---- Import / Export Blueprint Logic ---- //
+
+      const fileInput = document.getElementById("file-bp");
+
+      document.getElementById("btn-load-bp").addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const bpObj = JSON.parse(e.target.result);
+            workspace.loadBlueprint(bpObj);
+            statusMsg.textContent = "Đã tải Blueprint thành công!";
+          } catch (err) {
+            alert("Lỗi parse Blueprint (File JSON không hợp lệ)");
+          }
+          fileInput.value = "";
+        };
+        reader.readAsText(file);
+      });
+
+      document.getElementById("btn-down-bp").addEventListener("click", () => {
+        const bpObj = workspace.getBlueprint();
+        const jsonStr = JSON.stringify(bpObj, null, 2);
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `masax-blueprint-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          statusMsg.textContent = "Đã xuất Blueprint!";
+        }, 100);
+      });
+    </script>
+  </body>
+</html>
