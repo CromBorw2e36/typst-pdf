@@ -19,7 +19,7 @@ Thư viện JavaScript độc lập để biên dịch file PDF từ Typst templ
 ## 📂 Cấu trúc dự án
 
 ```text
-draw-pdf/
+typst-pdf/
 ├── package.json              # Cấu hình dependency & build scripts
 ├── vite.config.js            # Cấu hình Vite build (Library / Standalone / Full mode)
 ├── index.html                # Demo Editor App
