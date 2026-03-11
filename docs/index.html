@@ -174,6 +174,8 @@
             const pdfBlob = await workspace.exportPDF();
             const url = URL.createObjectURL(pdfBlob);
             window.open(url, "_blank");
+            // Revoke sau 1 phút để tránh memory leak (cần giữ lâu hơn vì tab mới cần load)
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
             statusMsg.textContent = "PDF sẵn sàng";
           } catch (err) {
             alert("Lỗi tạo PDF: " + err.message);

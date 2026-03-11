@@ -7,7 +7,6 @@
  */
 
 let initialized = false;
-let compilerInstance = null;
 let typstSnippet = null;
 
 // Cấu hình URL mặc định (hỗ trợ CDN jsDelivr khi không có node_modules)
@@ -159,13 +158,29 @@ async function resolveRemoteImages(content) {
 }
 
 /**
+ * Register extra fonts into the Typst VFS before compilation.
+ * @param {Array<{path: string, data: Uint8Array}>} fonts
+ */
+async function registerExtraFonts(fonts) {
+    if (!fonts || fonts.length === 0) return;
+    const $typst = getTypst();
+    for (const font of fonts) {
+        if (font.path && font.data) {
+            await $typst.mapShadow(font.path, font.data);
+        }
+    }
+}
+
+/**
  * Compile Typst → PDF Blob
  * @param {string} content - Typst markup string
+ * @param {Array<{path: string, data: Uint8Array}>} [extraFonts]
  * @returns {Promise<Blob>}
  */
-export async function compileTypstToPdf(content) {
+export async function compileTypstToPdf(content, extraFonts = []) {
     await initCompiler();
     const $typst = getTypst();
+    await registerExtraFonts(extraFonts);
     const resolvedContent = await resolveRemoteImages(content);
     const pdfBytes = await $typst.pdf({ mainContent: resolvedContent });
     return new Blob([pdfBytes], { type: 'application/pdf' });
@@ -174,11 +189,13 @@ export async function compileTypstToPdf(content) {
 /**
  * Compile Typst → SVG string (cho preview nhanh)
  * @param {string} content - Typst markup string
+ * @param {Array<{path: string, data: Uint8Array}>} [extraFonts]
  * @returns {Promise<string>}
  */
-export async function compileTypstToSvg(content) {
+export async function compileTypstToSvg(content, extraFonts = []) {
     await initCompiler();
     const $typst = getTypst();
+    await registerExtraFonts(extraFonts);
     const resolvedContent = await resolveRemoteImages(content);
     const result = await $typst.svg({ mainContent: resolvedContent });
     return Array.isArray(result) ? result.join('') : (result || '');

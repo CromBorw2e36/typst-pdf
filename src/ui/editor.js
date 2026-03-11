@@ -55,4 +55,11 @@ export class TypstEditor {
     focus() {
         this.view.focus();
     }
+
+    /**
+     * Dọn dẹp EditorView và giải phóng bộ nhớ
+     */
+    destroy() {
+        this.view.destroy();
+    }
 }

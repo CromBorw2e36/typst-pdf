@@ -30,7 +30,8 @@ export default defineConfig(({ mode }) => {
         lib: {
           entry: resolve(__dirname, 'src/index.js'),
           name: 'MasaxTypstPDF',
-          fileName: 'masax-typst-pdf'
+          fileName: 'masax-typst-pdf',
+          formats: ['es'],  // CodeMirror 6 là ESM-only, không hỗ trợ UMD global
         },
         rollupOptions: {
           external: [
@@ -39,13 +40,7 @@ export default defineConfig(({ mode }) => {
             '@codemirror/state',
             '@codemirror/view',
             'handlebars'
-          ],
-          output: {
-            globals: {
-              'codemirror': 'CodeMirror',
-              'handlebars': 'Handlebars'
-            }
-          }
+          ]
         }
       }
     };

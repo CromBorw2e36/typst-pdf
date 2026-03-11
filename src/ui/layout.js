@@ -4,12 +4,13 @@ import { TypstPreview } from './preview.js';
 export class MasaxWorkspace {
     /**
      * @param {HTMLElement} containerElement 
-     * @param {Object} options Options: { initialTemplate, initialData }
+     * @param {Object} options Options: { initialTemplate, initialData, onStatusChange }
      */
     constructor(containerElement, options = {}) {
         this.container = containerElement;
         this.data = options.initialData || {};
         this.template = options.initialTemplate || '#set page(width: "a4", height: "a4")\n\n= Hello World\n';
+        this.onStatusChange = options.onStatusChange || null;
         
         this._setupDOM();
         this._setupConsole();
@@ -44,14 +45,32 @@ export class MasaxWorkspace {
         });
 
         // Initial render
-        this.preview.renderPreview(this.template, this.data);
+        this.preview.renderPreview(this.template, this.data).then(() => {
+            this._emitStatus('Sẵn sàng');
+        }).catch(() => {
+            this._emitStatus('Lỗi khởi tạo');
+        });
+    }
+
+    /**
+     * Gửi thông báo trạng thái qua callback nếu có
+     * @param {string} msg
+     */
+    _emitStatus(msg) {
+        if (this.onStatusChange) this.onStatusChange(msg);
     }
 
     _setupConsole() {
-        const originalLog = console.log;
-        const originalWarn = console.warn;
-        const originalError = console.error;
-        const originalInfo = console.info;
+        this._originalConsole = {
+            log: console.log,
+            warn: console.warn,
+            error: console.error,
+            info: console.info,
+        };
+        const originalLog = this._originalConsole.log;
+        const originalWarn = this._originalConsole.warn;
+        const originalError = this._originalConsole.error;
+        const originalInfo = this._originalConsole.info;
 
         const appendLog = (type, args) => {
             const row = document.createElement('div');
@@ -210,8 +229,24 @@ export class MasaxWorkspace {
     }
 
     /**
+     * Dọn dẹp toàn bộ workspace: restore console, destroy editors, clear DOM
+     */
+    destroy() {
+        if (this._originalConsole) {
+            console.log = this._originalConsole.log;
+            console.warn = this._originalConsole.warn;
+            console.error = this._originalConsole.error;
+            console.info = this._originalConsole.info;
+        }
+        this.typstEditor.destroy();
+        this.jsonEditor.destroy();
+        this.preview.destroy();
+        this.container.innerHTML = '';
+    }
+
+    /**
      * Update data JSON and re-render
-     * @param {Object} newData 
+     * @param {Object} newData
      */
     updateData(newData) {
         this.data = newData;
