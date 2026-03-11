@@ -208,6 +208,13 @@ npm run build
 npm run build ; if ($?) { Copy-Item -Path ".\dist\*.js", ".\dist\*.cjs" -Destination ".\docs\lib\" -Force }
 ```
 
+## Hướng dẫn cập nhật extension visual code
+
+```bash
+npm install -g yo generator-code
+npm install -g yo generator-code
+```
+
 ## 📝 License
 
 MIT
