@@ -1,10 +1,10 @@
-import E from "handlebars";
-import { EditorState as b } from "@codemirror/state";
-import { EditorView as f } from "@codemirror/view";
-import { basicSetup as T } from "codemirror";
-class P {
+import S from "handlebars";
+import { EditorState as T } from "@codemirror/state";
+import { EditorView as u } from "@codemirror/view";
+import { basicSetup as _ } from "codemirror";
+class M {
   constructor() {
-    this.handlebars = E.create(), this.registerDefaultHelpers();
+    this.handlebars = S.create(), this.registerDefaultHelpers();
   }
   /**
    * Register common formatting helpers.
@@ -38,91 +38,111 @@ class P {
     }
   }
 }
-const u = new P();
-let w = !1, h = null;
-const S = "https://cdn.jsdelivr.net/npm", M = "0.7.0-rc2";
-function d(n, t) {
-  return window.location.protocol !== "file:" && !window.location.href.includes("localhost") && !window.location.href.includes("127.0.0.1") ? `${S}/${n}@${M}/${t}` : `/node_modules/${n}/${t}`;
+const w = new M();
+let g = !1, m = null;
+const P = "https://cdn.jsdelivr.net/npm", W = "0.7.0-rc2";
+function d(o, t) {
+  return window.location.protocol !== "file:" && !window.location.href.includes("localhost") && !window.location.href.includes("127.0.0.1") ? `${P}/${o}@${W}/${t}` : `/node_modules/${o}/${t}`;
 }
-async function C(n) {
-  const t = await fetch(n);
-  if (!t.ok) throw new Error(`Failed to fetch WASM: ${n}`);
+async function v(o) {
+  const t = await fetch(o);
+  if (!t.ok) throw new Error(`Failed to fetch WASM: ${o}`);
   return await t.arrayBuffer();
 }
-async function _() {
-  const n = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.mjs"), t = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
+async function D() {
+  const o = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.mjs"), t = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
     /* @vite-ignore */
-    n
+    o
   );
-  return e.setImportWasmModule && e.setImportWasmModule(async (r, a) => await C(t)), e.default && await e.default(), e;
+  return e.setImportWasmModule && e.setImportWasmModule(async (r, n) => await v(t)), e.default && await e.default(), e;
 }
-async function W() {
-  const n = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.mjs"), t = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
+async function $() {
+  const o = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.mjs"), t = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
     /* @vite-ignore */
-    n
+    o
   );
-  return e.setImportWasmModule && e.setImportWasmModule(async (r, a) => await C(t)), e.default && await e.default(), e;
+  return e.setImportWasmModule && e.setImportWasmModule(async (r, n) => await v(t)), e.default && await e.default(), e;
 }
-async function v() {
-  if (!w)
+async function x() {
+  if (!g)
     try {
-      const [n, t] = await Promise.all([
-        _(),
-        W()
+      const [o, t] = await Promise.all([
+        D(),
+        $()
       ]);
-      h = (await import(d("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, w = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
-    } catch (n) {
-      throw console.error("MasaxTypst: Failed to init compiler:", n), n;
+      m = (await import(d("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, g = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
+    } catch (o) {
+      throw console.error("MasaxTypst: Failed to init compiler:", o), o;
     }
 }
 function y() {
-  if (!h) throw new Error("Typst not initialized. Call initCompiler() first.");
-  return h;
+  if (!m) throw new Error("Typst not initialized. Call initCompiler() first.");
+  return m;
 }
-async function x(n) {
+const h = /* @__PURE__ */ new Map();
+function I(o, t) {
+  h.set(o, t);
+}
+function z() {
+  h.clear();
+}
+async function E(o) {
   const t = y(), e = /#image\(\s*"([^"]+)"/g;
-  let r, a = n;
-  for (; (r = e.exec(n)) !== null; ) {
-    const i = r[1];
-    let s = i;
-    if (!s.startsWith("http"))
+  let r, n = o;
+  for (; (r = e.exec(o)) !== null; ) {
+    const s = r[1], p = `/assets/${s.split("/").pop().replace(/[^a-zA-Z0-9.-]/g, "_") || `image_${Date.now()}.png`}`;
+    if (h.has(s)) {
+      console.log("MasaxTypst: Using preloaded asset ->", s), await t.mapShadow(p, h.get(s)), n = n.replaceAll(`"${s}"`, `"${p}"`);
+      continue;
+    }
+    let a = s;
+    if (!a.startsWith("http"))
       try {
-        s = new URL(i, window.location.href).href;
+        a = new URL(s, window.location.href).href;
       } catch {
-        s = i;
+        a = s;
       }
-    const o = `/assets/${i.split("/").pop().replace(/[^a-zA-Z0-9.-]/g, "_") || `image_${Date.now()}.png`}`;
     try {
-      console.log("MasaxTypst: Fetching asset ->", s);
+      console.log("MasaxTypst: Fetching asset ->", a);
       let l;
-      if (s.startsWith(window.location.origin) || !s.startsWith("http"))
-        l = await fetch(s);
+      if (a.startsWith(window.location.origin) || !a.startsWith("http"))
+        l = await fetch(a);
       else {
-        const p = `https://api.allorigins.win/raw?url=${encodeURIComponent(s)}`;
-        l = await fetch(p);
+        const c = `https://api.allorigins.win/raw?url=${encodeURIComponent(a)}`;
+        l = await fetch(c);
       }
       if (l.ok) {
-        const p = await l.arrayBuffer(), m = new Uint8Array(p);
-        await t.mapShadow(o, m), a = a.replaceAll(`"${i}"`, `"${o}"`);
+        const c = await l.arrayBuffer(), f = new Uint8Array(c);
+        await t.mapShadow(p, f), n = n.replaceAll(`"${s}"`, `"${p}"`);
       } else
-        console.warn(`MasaxTypst: Missing image at: ${s}`), a = a.replaceAll(`"${i}"`, '""');
+        console.warn(`MasaxTypst: Missing image at: ${a}`), n = n.replaceAll(`"${s}"`, '""');
     } catch (l) {
-      console.error(`MasaxTypst: Failed to fetch image ${s}`, l), a = a.replaceAll(`"${i}"`, '""');
+      console.error(`MasaxTypst: Failed to fetch image ${a}`, l), n = n.replaceAll(`"${s}"`, '""');
     }
   }
-  return a;
+  return n;
 }
-async function B(n) {
-  await v();
-  const t = y(), e = await x(n), r = await t.pdf({ mainContent: e });
-  return new Blob([r], { type: "application/pdf" });
+async function b(o) {
+  if (!o || o.length === 0) return;
+  const t = y();
+  for (const e of o)
+    e.path && e.data && await t.mapShadow(e.path, e.data);
 }
-async function D(n) {
-  await v();
-  const t = y(), e = await x(n), r = await t.svg({ mainContent: e });
-  return Array.isArray(r) ? r.join("") : r || "";
+async function k(o, t = []) {
+  await x();
+  const e = y();
+  await b(t);
+  const r = await E(o), n = await e.pdf({ mainContent: r });
+  return new Blob([n], { type: "application/pdf" });
 }
-class k {
+async function B(o, t = []) {
+  await x();
+  const e = y();
+  await b(t);
+  const r = await E(o), n = await e.svg({ mainContent: r });
+  return Array.isArray(n) ? n.join("") : n || "";
+}
+class A {
   /**
    * @param {Object|string} blueprint - The blueprint containing the Typst template and configuration
    */
@@ -184,8 +204,8 @@ class k {
    * @returns {Promise<Blob>}
    */
   async generatePDF(t = {}) {
-    const e = this._getTemplate(), r = u.resolve(e, t);
-    return await B(r, this.extraFonts);
+    const e = this._getTemplate(), r = w.resolve(e, t);
+    return await k(r, this.extraFonts);
   }
   /**
    * Generates an array of SVG strings for live preview
@@ -193,11 +213,11 @@ class k {
    * @returns {Promise<Array<string>>}
    */
   async generateSVG(t = {}) {
-    const e = this._getTemplate(), r = u.resolve(e, t);
-    return await D(r, this.extraFonts);
+    const e = this._getTemplate(), r = w.resolve(e, t);
+    return await B(r, this.extraFonts);
   }
 }
-class g {
+class C {
   /**
    * @param {HTMLElement} parentElement 
    * @param {string} initialContent 
@@ -205,18 +225,18 @@ class g {
    */
   constructor(t, e = "", r = null) {
     this.onChange = r;
-    const a = b.create({
+    const n = T.create({
       doc: e,
       extensions: [
-        T,
+        _,
         // Lắng nghe sự thay đổi của document
-        f.updateListener.of((i) => {
-          i.docChanged && this.onChange && this.onChange(i.state.doc.toString());
+        u.updateListener.of((s) => {
+          s.docChanged && this.onChange && this.onChange(s.state.doc.toString());
         })
       ]
     });
-    this.view = new f({
-      state: a,
+    this.view = new u({
+      state: n,
       parent: t
     });
   }
@@ -243,13 +263,19 @@ class g {
   focus() {
     this.view.focus();
   }
+  /**
+   * Dọn dẹp EditorView và giải phóng bộ nhớ
+   */
+  destroy() {
+    this.view.destroy();
+  }
 }
-class $ {
+class H {
   /**
    * @param {HTMLElement} parentElement 
    */
   constructor(t) {
-    this.parentElement = t, this.generator = new k();
+    this.parentElement = t, this.generator = new A();
   }
   /**
    * Renders SVG preview from Typst template and JSON Data.
@@ -259,71 +285,105 @@ class $ {
   async renderPreview(t, e = {}) {
     try {
       this.generator.loadBlueprint({ typstTemplate: t });
-      const r = await this.generator.generateSVG(e);
-      this.parentElement.innerHTML = r, this.parentElement.querySelectorAll("svg").forEach((i) => {
+      const r = await this.generator.generateSVG(e), n = this._sanitizeSvg(r);
+      this.parentElement.innerHTML = n, this.parentElement.querySelectorAll("svg").forEach((i) => {
         i.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)", i.style.marginBottom = "20px", i.style.backgroundColor = "#fff";
       });
     } catch (r) {
-      console.error("MasaxTypst: Preview Render Error:", r), this.parentElement.innerHTML = `
-                <div style="color: #721c24; background-color: #f8d7da; padding: 1rem; border: 1px solid #f5c6cb; border-radius: 4px; font-family: sans-serif;">
-                    <strong>Error rendering preview:</strong><br/>
-                    <pre style="white-space: pre-wrap; margin-top: 10px;">${r.message}</pre>
-                </div>
-            `;
+      console.error("MasaxTypst: Preview Render Error:", r);
+      const n = document.createElement("div");
+      n.style.cssText = "color:#721c24;background-color:#f8d7da;padding:1rem;border:1px solid #f5c6cb;border-radius:4px;font-family:sans-serif;";
+      const s = document.createElement("strong");
+      s.textContent = "Error rendering preview:";
+      const i = document.createElement("pre");
+      i.style.cssText = "white-space:pre-wrap;margin-top:10px;", i.textContent = r.message, n.appendChild(s), n.appendChild(document.createElement("br")), n.appendChild(i), this.parentElement.innerHTML = "", this.parentElement.appendChild(n);
     }
   }
+  /**
+   * Loại bỏ <script> và on* attributes trong SVG content để tránh XSS
+   * @param {string} svgString
+   * @returns {string}
+   */
+  _sanitizeSvg(t) {
+    const e = new DOMParser().parseFromString(`<div>${t}</div>`, "text/html");
+    return e.querySelectorAll("script").forEach((r) => r.remove()), e.querySelectorAll("*").forEach((r) => {
+      Array.from(r.attributes).forEach((n) => {
+        n.name.startsWith("on") && r.removeAttribute(n.name);
+      });
+    }), e.body.querySelector("div").innerHTML;
+  }
+  destroy() {
+    this.parentElement.innerHTML = "";
+  }
 }
-class N {
+class L {
   /**
    * @param {HTMLElement} containerElement 
-   * @param {Object} options Options: { initialTemplate, initialData }
+   * @param {Object} options Options: { initialTemplate, initialData, onStatusChange }
    */
   constructor(t, e = {}) {
     this.container = t, this.data = e.initialData || {}, this.template = e.initialTemplate || `#set page(width: "a4", height: "a4")
 
 = Hello World
-`, this._setupDOM(), this._setupConsole(), this.preview = new $(this.previewContainer);
+`, this.onStatusChange = e.onStatusChange || null, this._setupDOM(), this._setupConsole(), this.preview = new H(this.previewContainer);
     let r;
-    const a = JSON.stringify(this.data, null, 2);
-    this.jsonEditor = new g(this.jsonEditorContainer, a, (s) => {
+    const n = JSON.stringify(this.data, null, 2);
+    this.jsonEditor = new C(this.jsonEditorContainer, n, (i) => {
       clearTimeout(r), r = setTimeout(() => {
         try {
-          this.data = JSON.parse(s), this.preview.renderPreview(this.template, this.data);
-        } catch (c) {
-          console.error("MasaxTypst: Invalid JSON format", c.message);
+          this.data = JSON.parse(i), this.preview.renderPreview(this.template, this.data);
+        } catch (p) {
+          console.error("MasaxTypst: Invalid JSON format", p.message);
         }
       }, 500);
     });
-    let i;
-    this.typstEditor = new g(this.typstEditorContainer, this.template, (s) => {
-      this.template = s, clearTimeout(i), i = setTimeout(() => {
-        this.preview.renderPreview(s, this.data);
+    let s;
+    this.typstEditor = new C(this.typstEditorContainer, this.template, (i) => {
+      this.template = i, clearTimeout(s), s = setTimeout(() => {
+        this.preview.renderPreview(i, this.data);
       }, 500);
-    }), this.preview.renderPreview(this.template, this.data);
+    }), this.preview.renderPreview(this.template, this.data).then(() => {
+      this._emitStatus("Sẵn sàng");
+    }).catch(() => {
+      this._emitStatus("Lỗi khởi tạo");
+    });
+  }
+  /**
+   * Gửi thông báo trạng thái qua callback nếu có
+   * @param {string} msg
+   */
+  _emitStatus(t) {
+    this.onStatusChange && this.onStatusChange(t);
   }
   _setupConsole() {
-    const t = console.log, e = console.warn, r = console.error, a = console.info, i = (s, c) => {
-      const o = document.createElement("div");
-      o.style.padding = "4px 8px", o.style.borderBottom = "1px solid #ddd", o.style.fontFamily = "monospace", o.style.fontSize = "12px", o.style.wordBreak = "break-all", s === "error" ? (o.style.color = "#721c24", o.style.backgroundColor = "#f8d7da") : s === "warn" ? (o.style.color = "#856404", o.style.backgroundColor = "#fff3cd") : s === "info" ? (o.style.color = "#004085", o.style.backgroundColor = "#cce5ff") : o.style.color = "#333";
-      const l = (p) => {
-        if (typeof p == "object")
-          try {
-            return JSON.stringify(p);
-          } catch {
-            return Object.prototype.toString.call(p);
-          }
-        return String(p);
-      };
-      o.textContent = `[${s.toUpperCase()}] ` + Array.from(c).map(l).join(" "), this.consoleContainer.appendChild(o), this.consoleContainer.scrollTop = this.consoleContainer.scrollHeight;
+    this._originalConsole = {
+      log: console.log,
+      warn: console.warn,
+      error: console.error,
+      info: console.info
     };
-    console.log = (...s) => {
-      t.apply(console, s), i("log", s);
-    }, console.warn = (...s) => {
-      e.apply(console, s), i("warn", s);
-    }, console.error = (...s) => {
-      r.apply(console, s), i("error", s);
-    }, console.info = (...s) => {
-      a.apply(console, s), i("info", s);
+    const t = this._originalConsole.log, e = this._originalConsole.warn, r = this._originalConsole.error, n = this._originalConsole.info, s = (i, p) => {
+      const a = document.createElement("div");
+      a.style.padding = "4px 8px", a.style.borderBottom = "1px solid #ddd", a.style.fontFamily = "monospace", a.style.fontSize = "12px", a.style.wordBreak = "break-all", i === "error" ? (a.style.color = "#721c24", a.style.backgroundColor = "#f8d7da") : i === "warn" ? (a.style.color = "#856404", a.style.backgroundColor = "#fff3cd") : i === "info" ? (a.style.color = "#004085", a.style.backgroundColor = "#cce5ff") : a.style.color = "#333";
+      const l = (c) => {
+        if (typeof c == "object")
+          try {
+            return JSON.stringify(c);
+          } catch {
+            return Object.prototype.toString.call(c);
+          }
+        return String(c);
+      };
+      a.textContent = `[${i.toUpperCase()}] ` + Array.from(p).map(l).join(" "), this.consoleContainer.appendChild(a), this.consoleContainer.scrollTop = this.consoleContainer.scrollHeight;
+    };
+    console.log = (...i) => {
+      t.apply(console, i), s("log", i);
+    }, console.warn = (...i) => {
+      e.apply(console, i), s("warn", i);
+    }, console.error = (...i) => {
+      r.apply(console, i), s("error", i);
+    }, console.info = (...i) => {
+      n.apply(console, i), s("info", i);
     };
   }
   _setupDOM() {
@@ -336,8 +396,14 @@ class N {
     r.textContent = "Console Realtime", r.style.padding = "4px 8px", r.style.background = "#e9ecef", r.style.fontSize = "12px", r.style.fontWeight = "bold", r.style.borderBottom = "1px solid #ddd", r.style.position = "sticky", r.style.top = "0", this.consoleContainer.appendChild(r), this.rightPane.appendChild(this.previewContainerWrapper), this.rightPane.appendChild(this.consoleContainer), this.container.appendChild(this.leftPane), this.container.appendChild(this.rightPane);
   }
   /**
+   * Dọn dẹp toàn bộ workspace: restore console, destroy editors, clear DOM
+   */
+  destroy() {
+    this._originalConsole && (console.log = this._originalConsole.log, console.warn = this._originalConsole.warn, console.error = this._originalConsole.error, console.info = this._originalConsole.info), this.typstEditor.destroy(), this.jsonEditor.destroy(), this.preview.destroy(), this.container.innerHTML = "";
+  }
+  /**
    * Update data JSON and re-render
-   * @param {Object} newData 
+   * @param {Object} newData
    */
   updateData(t) {
     this.data = t, this.jsonEditor.setContent(JSON.stringify(this.data, null, 2)), this.preview.renderPreview(this.typstEditor.getContent(), this.data);
@@ -368,11 +434,13 @@ class N {
   }
 }
 export {
-  k as MasaxTypstPDF,
-  N as MasaxWorkspace,
-  P as TemplateResolver,
-  g as TypstEditor,
-  $ as TypstPreview,
-  u as defaultResolver,
-  v as initCompiler
+  A as MasaxTypstPDF,
+  L as MasaxWorkspace,
+  M as TemplateResolver,
+  C as TypstEditor,
+  H as TypstPreview,
+  z as clearPreloadedAssets,
+  w as defaultResolver,
+  x as initCompiler,
+  I as preloadAsset
 };

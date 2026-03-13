@@ -97,6 +97,29 @@ function getTypst() {
 }
 
 /**
+ * Pre-loaded assets: path -> Uint8Array
+ * Populated by preloadAsset() trước khi compile (dùng cho VSCode extension, môi trường không có fetch local)
+ */
+const preloadedAssets = new Map();
+
+/**
+ * Pre-load một asset vào VFS trước khi compile.
+ * Dùng khi môi trường không thể fetch file local (ví dụ: VSCode webview).
+ * @param {string} originalPath - Path gốc trong template, ví dụ: "./logo.png"
+ * @param {Uint8Array} data - Dữ liệu nhị phân của file
+ */
+export function preloadAsset(originalPath, data) {
+    preloadedAssets.set(originalPath, data);
+}
+
+/**
+ * Xóa toàn bộ pre-loaded assets (gọi trước mỗi lần render mới nếu cần)
+ */
+export function clearPreloadedAssets() {
+    preloadedAssets.clear();
+}
+
+/**
  * Automatically fetch and map remote images in the Typst VFS
  */
 async function resolveRemoteImages(content) {
@@ -105,10 +128,21 @@ async function resolveRemoteImages(content) {
     const urlRegex = /#image\(\s*"([^"]+)"/g;
     let match;
     let modifiedContent = content;
-    
+
     while ((match = urlRegex.exec(content)) !== null) {
         const originalPath = match[1];
-        
+
+        const filename = originalPath.split('/').pop().replace(/[^a-zA-Z0-9.-]/g, '_') || `image_${Date.now()}.png`;
+        const virtualPath = `/assets/${filename}`;
+
+        // Ưu tiên dùng pre-loaded asset nếu có (tránh fetch trong môi trường bị hạn chế)
+        if (preloadedAssets.has(originalPath)) {
+            console.log("MasaxTypst: Using preloaded asset ->", originalPath);
+            await $typst.mapShadow(virtualPath, preloadedAssets.get(originalPath));
+            modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `"${virtualPath}"`);
+            continue;
+        }
+
         let fetchUrl = originalPath;
         // If it's a relative/local path (not http/https), resolve it against browser's current origin
         if (!fetchUrl.startsWith('http')) {
@@ -119,12 +153,9 @@ async function resolveRemoteImages(content) {
             }
         }
 
-        const filename = originalPath.split('/').pop().replace(/[^a-zA-Z0-9.-]/g, '_') || `image_${Date.now()}.png`;
-        const virtualPath = `/assets/${filename}`;
-        
         try {
             console.log("MasaxTypst: Fetching asset ->", fetchUrl);
-            
+
             let response;
             if (fetchUrl.startsWith(window.location.origin) || !fetchUrl.startsWith('http')) {
                 // Local asset, fetch directly
@@ -134,26 +165,22 @@ async function resolveRemoteImages(content) {
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
                 response = await fetch(proxyUrl);
             }
-            
+
             if (response.ok) {
                 const buffer = await response.arrayBuffer();
                 const uint8Array = new Uint8Array(buffer);
-                
-                // map into Typst
                 await $typst.mapShadow(virtualPath, uint8Array);
-                
-                // patch the content
                 modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `"${virtualPath}"`);
             } else {
                 console.warn(`MasaxTypst: Missing image at: ${fetchUrl}`);
-                modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`); 
+                modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`);
             }
         } catch (err) {
             console.error(`MasaxTypst: Failed to fetch image ${fetchUrl}`, err);
-            modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`); 
+            modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`);
         }
     }
-    
+
     return modifiedContent;
 }
 

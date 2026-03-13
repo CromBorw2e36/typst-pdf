@@ -162,61 +162,57 @@
 #v(0.5cm)
 #text(size: 12pt, weight: "bold")[3. PHÊ DUYỆT KẾT QUẢ TUYỂN CHỌN VÀ CHẾ ĐỘ NHÂN SỰ]
 #v(0.2cm)
-
 #grid(
-  columns: (50%, 50%),
+  columns: (1fr, 1fr), // Dùng 1fr để tự động chia đều không gian mà không bị tràn lề
   column-gutter: 0.5cm,
   
   // Left block
-  [
-    #box(stroke: 1pt, width: 100%, inset: 0pt)[
-      #table(
-        columns: (80%, 20%),
-        stroke: (x, y) => (
-          bottom: 1pt,
-          right: if x == 0 { 0pt } else { 0pt }
-        ),
-        align: (left + horizon, right + horizon),
-        [Đồng ý tuyển dụng:], [#checkbox(true)],
-        [Trả hồ sơ (không đạt):], [#checkbox(false)]
+  grid.cell(stroke: 1pt, inset: 0pt)[
+    #table(
+      columns: (80%, 20%),
+      stroke: (x, y) => (
+        bottom: 1pt,
+        right: 0pt
+      ),
+      align: (left + horizon, right + horizon),
+      [Đồng ý tuyển dụng:], [#checkbox(true)],
+      [Trả hồ sơ (không đạt):], [#checkbox(false)]
+    )
+    #box(inset: 5pt)[
+      Ngày nhận việc: {{approval.startDate}} \
+      Cấp bậc nhân sự: {{approval.level}} \
+      Nhóm chức danh: {{approval.roleGroup}} \
+      Mức lương: {{approval.salary}} \
+      Lương thử việc: {{approval.probationSalary}} \
+      Lương sau thử việc: {{approval.postProbationSalary}}
+    ]
+    #line(length: 100%, stroke: 1pt)
+    #box(inset: 5pt)[
+      (Chọn 1 trong 2 lựa chọn) \
+      #grid(
+        columns: (10pt, 1fr),
+        column-gutter: 5pt,
+        [#checkbox(true)], [Ký HĐTV với thời gian: {{approval.contractDuration}}, từ ngày {{approval.contractFrom}} đến ngày {{approval.contractTo}}],
+        [#checkbox(false)], [Ký HĐLĐ xác định thời hạn: {{approval.contractTempDuration}} tháng]
       )
-      #box(inset: 5pt)[
-        Ngày nhận việc: {{approval.startDate}} \
-        Cấp bậc nhân sự: {{approval.level}} \
-        Nhóm chức danh: {{approval.roleGroup}} \
-        Mức lương: {{approval.salary}} \
-        Lương thử việc: {{approval.probationSalary}} \
-        Lương sau thử việc: {{approval.postProbationSalary}}
-      ]
-      #line(length: 100%, stroke: 1pt)
-      #box(inset: 5pt)[
-        (Chọn 1 trong 2 lựa chọn) \
-        #grid(
-          columns: (10pt, 1fr),
-          column-gutter: 5pt,
-          [#checkbox(true)], [Ký HĐTV với thời gian: {{approval.contractDuration}}, từ ngày {{approval.contractFrom}} đến ngày {{approval.contractTo}}],
-          [#checkbox(false)], [Ký HĐLĐ xác định thời hạn: {{approval.contractTempDuration}} tháng]
-        )
-      ]
-      #line(length: 100%, stroke: 1pt)
-      #box(inset: 5pt)[
-        Chế độ khác (ngoài quy định của Công ty): \
-        {{approval.otherModes}}
-        #v(2cm)
-      ]
+    ]
+    #line(length: 100%, stroke: 1pt)
+    #box(inset: 5pt)[
+      Chế độ khác (ngoài quy định của Công ty): \
+      {{approval.otherModes}}
+      #v(2cm)
     ]
   ],
+  
   // Right block
-  [
-    #box(stroke: 1pt, width: 100%, height: 100%, inset: 10pt)[
-      #align(center)[*CẤP THẨM QUYỀN PHÊ DUYỆT*]
-      
-      #v(0.5cm)
-      Họ tên: {{approval.approverName}} \
-      Ngày: {{approval.approvalDate}}
-      
-      #v(3cm)
-      // Signature placeholder
-    ]
+  grid.cell(stroke: 1pt, inset: 10pt)[
+    #align(center)[*CẤP THẨM QUYỀN PHÊ DUYỆT*]
+    
+    #v(0.5cm)
+    Họ tên: {{approval.approverName}} \
+    Ngày: {{approval.approvalDate}}
+    
+    #v(3cm)
+    // Signature placeholder
   ]
 )
