@@ -47,10 +47,11 @@ export class TemplateResolver {
      */
     resolve(templateString, data) {
         try {
-            // Unescaped by default for Typst syntax, but users should be careful
-            // Handlebars defaults to HTML escaping. We need to disable it for Typst markup.
+            console.info("MasaxTypst: Compiling Handlebars template...");
             const compiled = this.handlebars.compile(templateString, { noEscape: true });
-            return compiled(data);
+            const result = compiled(data);
+            console.info("MasaxTypst: Handlebars template resolved successfully.");
+            return result;
         } catch (error) {
             console.error('MasaxTypst: Handlebars Compilation Error:', error);
             throw error;

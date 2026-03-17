@@ -1,10 +1,10 @@
-import _ from "handlebars";
-import { EditorState as M } from "@codemirror/state";
+import M from "handlebars";
+import { EditorState as _ } from "@codemirror/state";
 import { EditorView as g } from "@codemirror/view";
 import { basicSetup as P } from "codemirror";
 class D {
   constructor() {
-    this.handlebars = _.create(), this.registerDefaultHelpers();
+    this.handlebars = M.create(), this.registerDefaultHelpers();
   }
   /**
    * Register common formatting helpers.
@@ -32,121 +32,136 @@ class D {
    */
   resolve(t, e) {
     try {
-      return this.handlebars.compile(t, { noEscape: !0 })(e);
-    } catch (r) {
-      throw console.error("MasaxTypst: Handlebars Compilation Error:", r), r;
+      console.info("MasaxTypst: Compiling Handlebars template...");
+      const s = this.handlebars.compile(t, { noEscape: !0 })(e);
+      return console.info("MasaxTypst: Handlebars template resolved successfully."), s;
+    } catch (o) {
+      throw console.error("MasaxTypst: Handlebars Compilation Error:", o), o;
     }
   }
 }
-let m = null;
+let f = null;
 function w() {
-  return m || (m = new D()), m;
+  return f || (f = new D()), f;
 }
 const C = { get resolve() {
   return w().resolve.bind(w());
 } };
-let v = !1, f = null;
-const W = "https://cdn.jsdelivr.net/npm", $ = "0.7.0-rc2";
-function c(o, t) {
-  return window.location.protocol !== "file:" && !window.location.href.includes("localhost") && !window.location.href.includes("127.0.0.1") ? `${W}/${o}@${$}/${t}` : `/node_modules/${o}/${t}`;
+let v = !1, u = null;
+const $ = "https://cdn.jsdelivr.net/npm", W = "0.7.0-rc2";
+function d(n, t) {
+  return window.location.protocol !== "file:" && !window.location.href.includes("localhost") && !window.location.href.includes("127.0.0.1") ? `${$}/${n}@${W}/${t}` : `/node_modules/${n}/${t}`;
 }
-async function E(o) {
-  const t = await fetch(o);
-  if (!t.ok) throw new Error(`Failed to fetch WASM: ${o}`);
+async function T(n) {
+  const t = await fetch(n);
+  if (!t.ok) throw new Error(`Failed to fetch WASM: ${n}`);
   return await t.arrayBuffer();
 }
 async function k() {
-  const o = c("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.mjs"), t = c("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
+  const n = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer.mjs"), t = d("@myriaddreamin/typst-ts-renderer", "pkg/typst_ts_renderer_bg.wasm"), e = await import(
     /* @vite-ignore */
-    o
+    n
   );
-  return e.setImportWasmModule && e.setImportWasmModule(async (r, n) => await E(t)), e.default && await e.default(), e;
+  return e.setImportWasmModule && e.setImportWasmModule(async (o, s) => await T(t)), e.default && await e.default(), e;
 }
 async function B() {
-  const o = c("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.mjs"), t = c("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
+  const n = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler.mjs"), t = d("@myriaddreamin/typst-ts-web-compiler", "pkg/typst_ts_web_compiler_bg.wasm"), e = await import(
     /* @vite-ignore */
-    o
+    n
   );
-  return e.setImportWasmModule && e.setImportWasmModule(async (r, n) => await E(t)), e.default && await e.default(), e;
+  return e.setImportWasmModule && e.setImportWasmModule(async (o, s) => await T(t)), e.default && await e.default(), e;
 }
-async function b() {
+async function E() {
   if (!v)
     try {
-      const [o, t] = await Promise.all([
+      const [n, t] = await Promise.all([
         k(),
         B()
       ]);
-      f = (await import(c("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, v = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
-    } catch (o) {
-      throw console.error("MasaxTypst: Failed to init compiler:", o), o;
+      u = (await import(d("@myriaddreamin/typst.ts", "dist/esm/contrib/snippet.mjs"))).$typst, v = !0, console.info("MasaxTypst: WASM Compiler & Renderer ready.");
+    } catch (n) {
+      throw console.error("MasaxTypst: Failed to init compiler:", n), n;
     }
 }
 function y() {
-  if (!f) throw new Error("Typst not initialized. Call initCompiler() first.");
-  return f;
+  if (!u) throw new Error("Typst not initialized. Call initCompiler() first.");
+  return u;
 }
 const h = /* @__PURE__ */ new Map();
-function z(o, t) {
-  h.set(o, t);
+function L(n, t) {
+  h.set(n, t);
 }
-function L() {
+function z() {
   h.clear();
 }
-async function S(o) {
+async function b(n) {
   const t = y(), e = /#image\(\s*"([^"]+)"/g;
-  let r, n = o;
-  for (; (r = e.exec(o)) !== null; ) {
-    const i = r[1], p = `/assets/${i.split("/").pop().replace(/[^a-zA-Z0-9.-]/g, "_") || `image_${Date.now()}.png`}`;
-    if (h.has(i)) {
-      console.log("MasaxTypst: Using preloaded asset ->", i), await t.mapShadow(p, h.get(i)), n = n.replaceAll(`"${i}"`, `"${p}"`);
+  let o, s = n;
+  for (console.info("MasaxTypst: Resolving images..."); (o = e.exec(n)) !== null; ) {
+    const r = o[1], p = `/assets/${r.split("/").pop().replace(/[^a-zA-Z0-9.-]/g, "_") || `image_${Date.now()}.png`}`;
+    if (h.has(r)) {
+      console.log("MasaxTypst: Using preloaded asset ->", r), await t.mapShadow(p, h.get(r)), s = s.replaceAll(`"${r}"`, `"${p}"`);
       continue;
     }
-    let a = i;
+    let a = r;
     if (!a.startsWith("http"))
       try {
-        a = new URL(i, window.location.href).href;
+        a = new URL(r, window.location.href).href;
       } catch {
-        a = i;
+        a = r;
       }
     try {
-      console.log("MasaxTypst: Fetching asset ->", a);
       let l;
       if (a.startsWith(window.location.origin) || !a.startsWith("http"))
-        l = await fetch(a);
+        console.log("MasaxTypst: Fetching local asset ->", a), l = await fetch(a);
       else {
-        const d = `https://api.allorigins.win/raw?url=${encodeURIComponent(a)}`;
-        l = await fetch(d);
+        const c = `https://api.allorigins.win/raw?url=${encodeURIComponent(a)}`;
+        console.log("MasaxTypst: Fetching external asset via CORS proxy ->", a), l = await fetch(c);
       }
       if (l.ok) {
-        const d = await l.arrayBuffer(), u = new Uint8Array(d);
-        await t.mapShadow(p, u), n = n.replaceAll(`"${i}"`, `"${p}"`);
+        const c = await l.arrayBuffer(), m = new Uint8Array(c);
+        await t.mapShadow(p, m), s = s.replaceAll(`"${r}"`, `"${p}"`), console.log("MasaxTypst: Image loaded ->", r, `(${m.byteLength} bytes)`);
       } else
-        console.warn(`MasaxTypst: Missing image at: ${a}`), n = n.replaceAll(`"${i}"`, '""');
+        console.warn(`MasaxTypst: Image fetch failed [HTTP ${l.status}] ${a}`), s = s.replaceAll(`"${r}"`, '""');
     } catch (l) {
-      console.error(`MasaxTypst: Failed to fetch image ${a}`, l), n = n.replaceAll(`"${i}"`, '""');
+      console.error(`MasaxTypst: Image fetch error -> ${a}:`, l.message || l), s = s.replaceAll(`"${r}"`, '""');
     }
   }
-  return n;
+  return console.info("MasaxTypst: Image resolution complete."), s;
 }
-async function T(o) {
-  if (!o || o.length === 0) return;
+async function S(n) {
+  if (!n || n.length === 0) return;
   const t = y();
-  for (const e of o)
+  for (const e of n)
     e.path && e.data && await t.mapShadow(e.path, e.data);
 }
-async function A(o, t = []) {
-  await b();
+async function H(n, t = []) {
+  await E();
   const e = y();
-  await T(t);
-  const r = await S(o), n = await e.pdf({ mainContent: r });
-  return new Blob([n], { type: "application/pdf" });
+  await S(t);
+  let o;
+  try {
+    o = await b(n);
+  } catch (r) {
+    console.warn("MasaxTypst: Image resolution failed, compiling without images.", r.message || r), o = n;
+  }
+  console.info("MasaxTypst: Compiling Typst → PDF...");
+  const s = await e.pdf({ mainContent: o });
+  return console.info("MasaxTypst: PDF compilation complete."), new Blob([s], { type: "application/pdf" });
 }
-async function H(o, t = []) {
-  await b();
+async function A(n, t = []) {
+  await E();
   const e = y();
-  await T(t);
-  const r = await S(o), n = await e.svg({ mainContent: r });
-  return Array.isArray(n) ? n.join("") : n || "";
+  await S(t);
+  let o;
+  try {
+    o = await b(n);
+  } catch (r) {
+    console.warn("MasaxTypst: Image resolution failed, compiling without images.", r.message || r), o = n;
+  }
+  console.info("MasaxTypst: Compiling Typst → SVG...");
+  const s = await e.svg({ mainContent: o });
+  return console.info("MasaxTypst: SVG compilation complete."), Array.isArray(s) ? s.join("") : s || "";
 }
 class F {
   /**
@@ -210,8 +225,10 @@ class F {
    * @returns {Promise<Blob>}
    */
   async generatePDF(t = {}) {
-    const e = this._getTemplate(), r = C.resolve(e, t);
-    return await A(r, this.extraFonts);
+    const e = this._getTemplate();
+    console.info("MasaxTypst: Resolving template with data...");
+    const o = C.resolve(e, t);
+    return console.info("MasaxTypst: Template resolved. Starting PDF compilation..."), await H(o, this.extraFonts);
   }
   /**
    * Generates an array of SVG strings for live preview
@@ -219,8 +236,10 @@ class F {
    * @returns {Promise<Array<string>>}
    */
   async generateSVG(t = {}) {
-    const e = this._getTemplate(), r = C.resolve(e, t);
-    return await H(r, this.extraFonts);
+    const e = this._getTemplate();
+    console.info("MasaxTypst: Resolving template with data...");
+    const o = C.resolve(e, t);
+    return console.info("MasaxTypst: Template resolved. Starting SVG compilation..."), await A(o, this.extraFonts);
   }
 }
 class x {
@@ -229,20 +248,20 @@ class x {
    * @param {string} initialContent 
    * @param {Function} onChangeCallback 
    */
-  constructor(t, e = "", r = null) {
-    this.onChange = r;
-    const n = M.create({
+  constructor(t, e = "", o = null) {
+    this.onChange = o;
+    const s = _.create({
       doc: e,
       extensions: [
         P,
         // Lắng nghe sự thay đổi của document
-        g.updateListener.of((i) => {
-          i.docChanged && this.onChange && this.onChange(i.state.doc.toString());
+        g.updateListener.of((r) => {
+          r.docChanged && this.onChange && this.onChange(r.state.doc.toString());
         })
       ]
     });
     this.view = new g({
-      state: n,
+      state: s,
       parent: t
     });
   }
@@ -276,7 +295,7 @@ class x {
     this.view.destroy();
   }
 }
-class j {
+class I {
   /**
    * @param {HTMLElement} parentElement 
    */
@@ -291,18 +310,18 @@ class j {
   async renderPreview(t, e = {}) {
     try {
       this.generator.loadBlueprint({ typstTemplate: t });
-      const r = await this.generator.generateSVG(e), n = this._sanitizeSvg(r);
-      this.parentElement.innerHTML = n, this.parentElement.querySelectorAll("svg").forEach((s) => {
-        s.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)", s.style.marginBottom = "20px", s.style.backgroundColor = "#fff";
+      const o = await this.generator.generateSVG(e), s = this._sanitizeSvg(o);
+      this.parentElement.innerHTML = s, this.parentElement.querySelectorAll("svg").forEach((i) => {
+        i.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)", i.style.marginBottom = "20px", i.style.backgroundColor = "#fff";
       });
-    } catch (r) {
-      console.error("MasaxTypst: Preview Render Error:", r);
-      const n = document.createElement("div");
-      n.style.cssText = "color:#721c24;background-color:#f8d7da;padding:1rem;border:1px solid #f5c6cb;border-radius:4px;font-family:sans-serif;";
-      const i = document.createElement("strong");
-      i.textContent = "Error rendering preview:";
-      const s = document.createElement("pre");
-      s.style.cssText = "white-space:pre-wrap;margin-top:10px;", s.textContent = r.message, n.appendChild(i), n.appendChild(document.createElement("br")), n.appendChild(s), this.parentElement.innerHTML = "", this.parentElement.appendChild(n);
+    } catch (o) {
+      console.error("MasaxTypst: Preview Render Error:", o);
+      const s = document.createElement("div");
+      s.style.cssText = "color:#721c24;background-color:#f8d7da;padding:1rem;border:1px solid #f5c6cb;border-radius:4px;font-family:sans-serif;";
+      const r = document.createElement("strong");
+      r.textContent = "Error rendering preview:";
+      const i = document.createElement("pre");
+      i.style.cssText = "white-space:pre-wrap;margin-top:10px;", i.textContent = o.message, s.appendChild(r), s.appendChild(document.createElement("br")), s.appendChild(i), this.parentElement.innerHTML = "", this.parentElement.appendChild(s);
     }
   }
   /**
@@ -312,9 +331,9 @@ class j {
    */
   _sanitizeSvg(t) {
     const e = new DOMParser().parseFromString(`<div>${t}</div>`, "text/html");
-    return e.querySelectorAll("script").forEach((r) => r.remove()), e.querySelectorAll("*").forEach((r) => {
-      Array.from(r.attributes).forEach((n) => {
-        n.name.startsWith("on") && r.removeAttribute(n.name);
+    return e.querySelectorAll("script").forEach((o) => o.remove()), e.querySelectorAll("*").forEach((o) => {
+      Array.from(o.attributes).forEach((s) => {
+        s.name.startsWith("on") && o.removeAttribute(s.name);
       });
     }), e.body.querySelector("div").innerHTML;
   }
@@ -322,7 +341,7 @@ class j {
     this.parentElement.innerHTML = "";
   }
 }
-class J {
+class V {
   /**
    * @param {HTMLElement} containerElement 
    * @param {Object} options Options: { initialTemplate, initialData, onStatusChange }
@@ -331,22 +350,22 @@ class J {
     this.container = t, this.data = e.initialData || {}, this.template = e.initialTemplate || `#set page(width: "a4", height: "a4")
 
 = Hello World
-`, this.onStatusChange = e.onStatusChange || null, this._setupDOM(), this._setupConsole(), this.preview = new j(this.previewContainer);
-    let r;
-    const n = JSON.stringify(this.data, null, 2);
-    this.jsonEditor = new x(this.jsonEditorContainer, n, (s) => {
-      clearTimeout(r), r = setTimeout(() => {
+`, this.onStatusChange = e.onStatusChange || null, this._setupDOM(), this._setupConsole(), this.preview = new I(this.previewContainer);
+    let o;
+    const s = JSON.stringify(this.data, null, 2);
+    this.jsonEditor = new x(this.jsonEditorContainer, s, (i) => {
+      clearTimeout(o), o = setTimeout(() => {
         try {
-          this.data = JSON.parse(s), this.preview.renderPreview(this.template, this.data);
+          this.data = JSON.parse(i), this.preview.renderPreview(this.template, this.data);
         } catch (p) {
           console.error("MasaxTypst: Invalid JSON format", p.message);
         }
       }, 500);
     });
-    let i;
-    this.typstEditor = new x(this.typstEditorContainer, this.template, (s) => {
-      this.template = s, clearTimeout(i), i = setTimeout(() => {
-        this.preview.renderPreview(s, this.data);
+    let r;
+    this.typstEditor = new x(this.typstEditorContainer, this.template, (i) => {
+      this.template = i, clearTimeout(r), r = setTimeout(() => {
+        this.preview.renderPreview(i, this.data);
       }, 500);
     }), this.preview.renderPreview(this.template, this.data).then(() => {
       this._emitStatus("Sẵn sàng");
@@ -368,28 +387,28 @@ class J {
       error: console.error,
       info: console.info
     };
-    const t = this._originalConsole.log, e = this._originalConsole.warn, r = this._originalConsole.error, n = this._originalConsole.info, i = (s, p) => {
+    const t = this._originalConsole.log, e = this._originalConsole.warn, o = this._originalConsole.error, s = this._originalConsole.info, r = (i, p) => {
       const a = document.createElement("div");
-      a.style.padding = "4px 8px", a.style.borderBottom = "1px solid #ddd", a.style.fontFamily = "monospace", a.style.fontSize = "12px", a.style.wordBreak = "break-all", s === "error" ? (a.style.color = "#721c24", a.style.backgroundColor = "#f8d7da") : s === "warn" ? (a.style.color = "#856404", a.style.backgroundColor = "#fff3cd") : s === "info" ? (a.style.color = "#004085", a.style.backgroundColor = "#cce5ff") : a.style.color = "#333";
-      const l = (d) => {
-        if (typeof d == "object")
+      a.style.padding = "4px 8px", a.style.borderBottom = "1px solid #ddd", a.style.fontFamily = "monospace", a.style.fontSize = "12px", a.style.wordBreak = "break-all", i === "error" ? (a.style.color = "#721c24", a.style.backgroundColor = "#f8d7da") : i === "warn" ? (a.style.color = "#856404", a.style.backgroundColor = "#fff3cd") : i === "info" ? (a.style.color = "#004085", a.style.backgroundColor = "#cce5ff") : a.style.color = "#333";
+      const l = (c) => {
+        if (typeof c == "object")
           try {
-            return JSON.stringify(d);
+            return JSON.stringify(c);
           } catch {
-            return Object.prototype.toString.call(d);
+            return Object.prototype.toString.call(c);
           }
-        return String(d);
+        return String(c);
       };
-      a.textContent = `[${s.toUpperCase()}] ` + Array.from(p).map(l).join(" "), this.consoleContainer.appendChild(a), this.consoleContainer.scrollTop = this.consoleContainer.scrollHeight;
+      a.textContent = `[${i.toUpperCase()}] ` + Array.from(p).map(l).join(" "), this.consoleContainer.appendChild(a), this.consoleContainer.scrollTop = this.consoleContainer.scrollHeight;
     };
-    console.log = (...s) => {
-      t.apply(console, s), i("log", s);
-    }, console.warn = (...s) => {
-      e.apply(console, s), i("warn", s);
-    }, console.error = (...s) => {
-      r.apply(console, s), i("error", s);
-    }, console.info = (...s) => {
-      n.apply(console, s), i("info", s);
+    console.log = (...i) => {
+      t.apply(console, i), r("log", i);
+    }, console.warn = (...i) => {
+      e.apply(console, i), r("warn", i);
+    }, console.error = (...i) => {
+      o.apply(console, i), r("error", i);
+    }, console.info = (...i) => {
+      s.apply(console, i), r("info", i);
     };
   }
   _setupDOM() {
@@ -398,8 +417,8 @@ class J {
     t.textContent = "Typst Code", t.style.padding = "4px 8px", t.style.background = "#f8f9fa", t.style.fontSize = "12px", t.style.fontWeight = "bold", t.style.borderBottom = "1px solid #ddd", t.style.position = "sticky", t.style.top = "0", t.style.zIndex = "10", this.typstEditorContainer.appendChild(t), this.jsonEditorContainer = document.createElement("div"), this.jsonEditorContainer.style.flex = "1", this.jsonEditorContainer.style.overflow = "auto", this.jsonEditorContainer.style.position = "relative";
     const e = document.createElement("div");
     e.textContent = "JSON Data", e.style.padding = "4px 8px", e.style.background = "#f8f9fa", e.style.fontSize = "12px", e.style.fontWeight = "bold", e.style.borderBottom = "1px solid #ddd", e.style.position = "sticky", e.style.top = "0", e.style.zIndex = "10", this.jsonEditorContainer.appendChild(e), this.leftPane.appendChild(this.typstEditorContainer), this.leftPane.appendChild(this.jsonEditorContainer), this.rightPane = document.createElement("div"), this.rightPane.style.flex = "1", this.rightPane.style.display = "flex", this.rightPane.style.flexDirection = "column", this.previewContainerWrapper = document.createElement("div"), this.previewContainerWrapper.style.flex = "2", this.previewContainerWrapper.style.overflow = "auto", this.previewContainerWrapper.style.backgroundColor = "#f5f5f5", this.previewContainerWrapper.style.borderBottom = "1px solid #ddd", this.previewContainer = document.createElement("div"), this.previewContainer.style.padding = "40px 20px", this.previewContainer.style.display = "flex", this.previewContainer.style.flexDirection = "column", this.previewContainer.style.alignItems = "center", this.previewContainerWrapper.appendChild(this.previewContainer), this.consoleContainer = document.createElement("div"), this.consoleContainer.style.flex = "1", this.consoleContainer.style.overflow = "auto", this.consoleContainer.style.backgroundColor = "#fafafa", this.consoleContainer.style.position = "relative";
-    const r = document.createElement("div");
-    r.textContent = "Console Realtime", r.style.padding = "4px 8px", r.style.background = "#e9ecef", r.style.fontSize = "12px", r.style.fontWeight = "bold", r.style.borderBottom = "1px solid #ddd", r.style.position = "sticky", r.style.top = "0", this.consoleContainer.appendChild(r), this.rightPane.appendChild(this.previewContainerWrapper), this.rightPane.appendChild(this.consoleContainer), this.container.appendChild(this.leftPane), this.container.appendChild(this.rightPane);
+    const o = document.createElement("div");
+    o.textContent = "Console Realtime", o.style.padding = "4px 8px", o.style.background = "#e9ecef", o.style.fontSize = "12px", o.style.fontWeight = "bold", o.style.borderBottom = "1px solid #ddd", o.style.position = "sticky", o.style.top = "0", this.consoleContainer.appendChild(o), this.rightPane.appendChild(this.previewContainerWrapper), this.rightPane.appendChild(this.consoleContainer), this.container.appendChild(this.leftPane), this.container.appendChild(this.rightPane);
   }
   /**
    * Dọn dẹp toàn bộ workspace: restore console, destroy editors, clear DOM
@@ -441,15 +460,15 @@ class J {
 }
 export {
   F as MasaxTypstPDF,
-  J as MasaxWorkspace,
+  V as MasaxWorkspace,
   D as TemplateResolver,
   x as TypstEditor,
-  j as TypstPreview,
-  L as clearPreloadedAssets,
-  A as compileTypstToPdf,
-  H as compileTypstToSvg,
+  I as TypstPreview,
+  z as clearPreloadedAssets,
+  H as compileTypstToPdf,
+  A as compileTypstToSvg,
   C as defaultResolver,
   w as getDefaultResolver,
-  b as initCompiler,
-  z as preloadAsset
+  E as initCompiler,
+  L as preloadAsset
 };

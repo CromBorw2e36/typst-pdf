@@ -81,10 +81,9 @@ export class MasaxTypstPDF {
      */
     async generatePDF(data = {}) {
         const template = this._getTemplate();
-        // Resolve data with Handlebars
+        console.info("MasaxTypst: Resolving template with data...");
         const resolvedMarkup = defaultResolver.resolve(template, data);
-        
-        // Compile to PDF
+        console.info("MasaxTypst: Template resolved. Starting PDF compilation...");
         return await compileTypstToPdf(resolvedMarkup, this.extraFonts);
     }
     
@@ -95,9 +94,9 @@ export class MasaxTypstPDF {
      */
     async generateSVG(data = {}) {
         const template = this._getTemplate();
+        console.info("MasaxTypst: Resolving template with data...");
         const resolvedMarkup = defaultResolver.resolve(template, data);
-        
-        // Compile to SVG
+        console.info("MasaxTypst: Template resolved. Starting SVG compilation...");
         return await compileTypstToSvg(resolvedMarkup, this.extraFonts);
     }
 }

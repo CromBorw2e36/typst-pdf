@@ -124,10 +124,11 @@ export function clearPreloadedAssets() {
  */
 async function resolveRemoteImages(content) {
     const $typst = getTypst();
-    // Match any string inside #image("...")
     const urlRegex = /#image\(\s*"([^"]+)"/g;
     let match;
     let modifiedContent = content;
+
+    console.info("MasaxTypst: Resolving images...");
 
     while ((match = urlRegex.exec(content)) !== null) {
         const originalPath = match[1];
@@ -144,7 +145,6 @@ async function resolveRemoteImages(content) {
         }
 
         let fetchUrl = originalPath;
-        // If it's a relative/local path (not http/https), resolve it against browser's current origin
         if (!fetchUrl.startsWith('http')) {
             try {
                 fetchUrl = new URL(originalPath, window.location.href).href;
@@ -154,15 +154,13 @@ async function resolveRemoteImages(content) {
         }
 
         try {
-            console.log("MasaxTypst: Fetching asset ->", fetchUrl);
-
             let response;
             if (fetchUrl.startsWith(window.location.origin) || !fetchUrl.startsWith('http')) {
-                // Local asset, fetch directly
+                console.log("MasaxTypst: Fetching local asset ->", fetchUrl);
                 response = await fetch(fetchUrl);
             } else {
-                // External asset, use CORS proxy
                 const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(fetchUrl)}`;
+                console.log("MasaxTypst: Fetching external asset via CORS proxy ->", fetchUrl);
                 response = await fetch(proxyUrl);
             }
 
@@ -171,16 +169,18 @@ async function resolveRemoteImages(content) {
                 const uint8Array = new Uint8Array(buffer);
                 await $typst.mapShadow(virtualPath, uint8Array);
                 modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `"${virtualPath}"`);
+                console.log("MasaxTypst: Image loaded ->", originalPath, `(${uint8Array.byteLength} bytes)`);
             } else {
-                console.warn(`MasaxTypst: Missing image at: ${fetchUrl}`);
+                console.warn(`MasaxTypst: Image fetch failed [HTTP ${response.status}] ${fetchUrl}`);
                 modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`);
             }
         } catch (err) {
-            console.error(`MasaxTypst: Failed to fetch image ${fetchUrl}`, err);
+            console.error(`MasaxTypst: Image fetch error -> ${fetchUrl}:`, err.message || err);
             modifiedContent = modifiedContent.replaceAll(`"${originalPath}"`, `""`);
         }
     }
 
+    console.info("MasaxTypst: Image resolution complete.");
     return modifiedContent;
 }
 
@@ -208,8 +208,18 @@ export async function compileTypstToPdf(content, extraFonts = []) {
     await initCompiler();
     const $typst = getTypst();
     await registerExtraFonts(extraFonts);
-    const resolvedContent = await resolveRemoteImages(content);
+
+    let resolvedContent;
+    try {
+        resolvedContent = await resolveRemoteImages(content);
+    } catch (err) {
+        console.warn("MasaxTypst: Image resolution failed, compiling without images.", err.message || err);
+        resolvedContent = content;
+    }
+
+    console.info("MasaxTypst: Compiling Typst → PDF...");
     const pdfBytes = await $typst.pdf({ mainContent: resolvedContent });
+    console.info("MasaxTypst: PDF compilation complete.");
     return new Blob([pdfBytes], { type: 'application/pdf' });
 }
 
@@ -223,7 +233,17 @@ export async function compileTypstToSvg(content, extraFonts = []) {
     await initCompiler();
     const $typst = getTypst();
     await registerExtraFonts(extraFonts);
-    const resolvedContent = await resolveRemoteImages(content);
+
+    let resolvedContent;
+    try {
+        resolvedContent = await resolveRemoteImages(content);
+    } catch (err) {
+        console.warn("MasaxTypst: Image resolution failed, compiling without images.", err.message || err);
+        resolvedContent = content;
+    }
+
+    console.info("MasaxTypst: Compiling Typst → SVG...");
     const result = await $typst.svg({ mainContent: resolvedContent });
+    console.info("MasaxTypst: SVG compilation complete.");
     return Array.isArray(result) ? result.join('') : (result || '');
 }
