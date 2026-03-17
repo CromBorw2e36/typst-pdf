@@ -58,4 +58,14 @@ export class TemplateResolver {
     }
 }
 
-export const defaultResolver = new TemplateResolver();
+// Lazy singleton – avoids calling Handlebars.create() at module-load time,
+// which uses `new Function()` and breaks in CSP-restricted environments (e.g. VS Code webviews).
+let _defaultResolver = null;
+export function getDefaultResolver() {
+    if (!_defaultResolver) {
+        _defaultResolver = new TemplateResolver();
+    }
+    return _defaultResolver;
+}
+// Backwards-compat: keep named export for existing consumers
+export const defaultResolver = { get resolve() { return getDefaultResolver().resolve.bind(getDefaultResolver()); } };
