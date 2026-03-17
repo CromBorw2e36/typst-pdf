@@ -20461,6 +20461,8 @@ export {
   _h as TypstEditor,
   ob as TypstPreview,
   ab as clearPreloadedAssets,
+  Jp as compileTypstToPdf,
+  Yp as compileTypstToSvg,
   Jl as defaultResolver,
   Yh as initCompiler,
   lb as preloadAsset

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npx vsce:*)",
+      "Bash(npm install:*)",
+      "Bash(code --install-extension k:/Project/Sub/draw-pdf/typst-pdf-vscode/typst-pdf-vscode-0.0.1.vsix)",
+      "Bash(code --version)",
+      "Bash(npm run:*)",
+      "Bash(npx @vscode/vsce package --no-dependencies)",
+      "Bash(npm ls:*)",
+      "Bash(npm uninstall:*)"
+    ]
+  }
+}
