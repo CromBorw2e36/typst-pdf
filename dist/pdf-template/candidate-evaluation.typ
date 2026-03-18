@@ -1,5 +1,5 @@
 // Data injection — any engine just replaces {{DATA}} with escaped JSON string
-#let data = json.decode("{{DATA}}")
+#let data = json(bytes("{{DATA}}"))
 #let candidate = data.at("candidate", default: (:))
 #let evaluations = data.at("evaluations", default: ())
 #let interviewers = data.at("interviewers", default: ())

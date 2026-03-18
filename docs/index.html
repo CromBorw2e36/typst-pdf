@@ -115,7 +115,7 @@
       import { MasaxWorkspace } from "./lib/masax-typst-pdf.full.js";
 
       const initialTemplate = `// Typst-native data injection
-#let data = json.decode("` + "{{DATA}}" + `")
+#let data = json(bytes("` + "{{DATA}}" + `"))
 
 // Helper: format tien VND
 #let fmt-currency(value) = {
