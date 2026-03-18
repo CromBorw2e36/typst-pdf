@@ -81,12 +81,12 @@ export class MasaxTypstPDF {
      */
     async generatePDF(data = {}) {
         const template = this._getTemplate();
-        console.info("MasaxTypst: Resolving template with data...");
+        console.info("MasaxTypst: Injecting data into template...");
         const resolvedMarkup = defaultResolver.resolve(template, data);
-        console.info("MasaxTypst: Template resolved. Starting PDF compilation...");
+        console.info("MasaxTypst: Data injected. Starting PDF compilation...");
         return await compileTypstToPdf(resolvedMarkup, this.extraFonts);
     }
-    
+
     /**
      * Generates an array of SVG strings for live preview
      * @param {Object} data - Context data to resolve the template
@@ -94,9 +94,9 @@ export class MasaxTypstPDF {
      */
     async generateSVG(data = {}) {
         const template = this._getTemplate();
-        console.info("MasaxTypst: Resolving template with data...");
+        console.info("MasaxTypst: Injecting data into template...");
         const resolvedMarkup = defaultResolver.resolve(template, data);
-        console.info("MasaxTypst: Template resolved. Starting SVG compilation...");
+        console.info("MasaxTypst: Data injected. Starting SVG compilation...");
         return await compileTypstToSvg(resolvedMarkup, this.extraFonts);
     }
 }

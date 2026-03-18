@@ -38,8 +38,7 @@ export default defineConfig(({ mode }) => {
             ...TYPST_EXTERNALS,
             'codemirror',
             '@codemirror/state',
-            '@codemirror/view',
-            'handlebars'
+            '@codemirror/view'
           ]
         }
       }

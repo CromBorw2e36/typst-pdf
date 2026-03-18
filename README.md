@@ -4,62 +4,86 @@
 [![npm downloads](https://img.shields.io/npm/dm/typst-pdf.svg)](https://www.npmjs.com/package/typst-pdf)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-**📦 npm:** [npmjs.com/package/typst-pdf](https://www.npmjs.com/package/typst-pdf)
+**npm:** [npmjs.com/package/typst-pdf](https://www.npmjs.com/package/typst-pdf)
 
-Thư viện JavaScript độc lập để biên dịch file PDF từ Typst templates, kết hợp với Handlebars data binding trực tiếp trên trình duyệt. Không phụ thuộc vào các công cụ render HTML-to-PDF cũ kĩ, mang lại hiệu suất tạo file PDF siêu tốc và layout chính xác.
+Thư viện JavaScript cross-platform de bien dich PDF tu Typst templates voi JSON data injection. Su dung Typst-native scripting thay vi Handlebars, ho tro moi engine (Flutter, .NET, Java, Python...) chi can string replace.
 
-## 🌟 Tính năng nổi bật
+## Tinh nang
 
-- **Pure Typst Architecture**: Render file PDF trực tiếp từ mã nguồn Typst bằng WebAssembly (WASM).
-- **Trình soạn thảo trực quan**: Tích hợp sẵn UI Editor để chỉnh sửa và Preview Typst realtime (Live SVG preview).
-- **Data Binding mạnh mẽ**: Sử dụng engine Handlebars (`{{variable}}`, `{{#each loop}}`, `{{#if condition}}`) ngay bên trong syntax Typst.
-- **Auto Remote Images**: Tự động fetch ảnh từ các URL ngoài (xuyên CORS) và đưa vào Virtual File System cho Typst xử lý.
-- **Siêu nhẹ**: Hỗ trợ Tree-shaking tối đa, tách loader WASM để tối ưu thời gian tải trang.
+- **Pure Typst Architecture**: Render PDF truc tiep tu Typst bang WebAssembly (WASM)
+- **Cross-platform Data Injection**: Chi can `template.replace("{{DATA}}", escapedJson)` — bat ky engine nao cung lam duoc
+- **Typst-native Scripting**: Su dung `#if`, `#for`, `#let`, phep tinh... truc tiep trong template
+- **Trinh soan thao truc quan**: Tich hop san UI Editor voi Live SVG preview
+- **Auto Remote Images**: Tu dong fetch anh tu URL ngoai (xuyen CORS) va dua vao Virtual File System
+- **Sieu nhe**: Khong phu thuoc Handlebars, bundle chi ~605KB
 
-## 📂 Cấu trúc dự án
+## Cach hoat dong
+
+Template dung Typst-native syntax voi placeholder `{{DATA}}`:
+
+```typst
+#let data = json.decode("{{DATA}}")
+
+= Hoa don cho #data.name
+Tong tien: #data.total
+
+#for item in data.items [
+  #item.name — #item.price \
+]
+
+#if data.total > 10000000 [
+  *Khach hang VIP*
+]
+```
+
+Moi engine chi can:
+```js
+// JavaScript
+import { injectData } from 'typst-pdf';
+const typst = injectData(template, { name: "A", total: 15000000 });
+```
+```dart
+// Flutter
+final typst = template.replaceAll('{{DATA}}', escape(jsonEncode(data)));
+```
+```csharp
+// .NET
+var typst = template.Replace("{{DATA}}", Escape(JsonSerializer.Serialize(data)));
+```
+
+## Cau truc du an
 
 ```text
 typst-pdf/
-├── package.json              # Cấu hình dependency & build scripts
-├── vite.config.js            # Cấu hình Vite build (Library / Standalone / Full mode)
-├── index.html                # Demo Editor App
 ├── src/
 │   ├── core/
-│   │   ├── resolver.js       # Data binding engine (Handlebars)
+│   │   ├── resolver.js       # injectData() — JSON string replace
 │   │   ├── compiler.js       # Typst WASM Compiler & Image Fetcher
-│   │   └── generator.js      # MASAX Typst Core (`MasaxTypstPDF`)
-│   │
+│   │   └── generator.js      # MasaxTypstPDF class
 │   ├── ui/
-│   │   ├── editor.js         # Text Editor (CodeMirror) wrapper
+│   │   ├── editor.js         # CodeMirror editor wrapper
 │   │   ├── preview.js        # SVG Live Preview renderer
 │   │   └── layout.js         # Workspace Layout Manager
-│   │
-│   └── index.js              # Entry point xuất thư viện
+│   └── index.js              # Entry point
+├── typst-pdf-vscode/         # VS Code extension
+└── docs/                     # GitHub Pages demo
 ```
 
-## 🚀 Cài đặt & Sử dụng
+## Cai dat & Su dung
 
-### Cách 1: Cài qua npm (Dành cho dự án dùng Bundler như Vite, Webpack)
+### Cach 1: npm (Vite, Webpack)
 
 ```bash
 npm install typst-pdf
 ```
 
-Sau đó import vào code của bạn:
-
 ```javascript
-import { MasaxWorkspace, MasaxTypstPDF } from "typst-pdf";
+import { MasaxTypstPDF, injectData } from "typst-pdf";
 ```
 
-> **Lưu ý:** Khi dùng npm, Vite sẽ tự xử lý việc load các file WASM từ `node_modules`. Không cần cấu hình thêm gì.
+### Cach 2: CDN / HTML thuan
 
----
-
-### Cách 2: Dùng trực tiếp qua `<script>` trong HTML (Không cần Node.js / Bundler)
-
-Đây là cách dùng đơn giản nhất, chỉ cần thêm 2 thẻ `<script>` vào file HTML. Tất cả các file WASM và module phụ thuộc được tải tự động từ CDN jsDelivr.
-
-**Bước 1:** Thêm `<script type="importmap">` vào phần `<head>` để khai báo các module Typst phụ thuộc:
+**Buoc 1:** Import Map cho Typst WASM:
 
 ```html
 <script type="importmap">
@@ -78,14 +102,15 @@ import { MasaxWorkspace, MasaxTypstPDF } from "typst-pdf";
 </script>
 ```
 
-**Bước 2:** Import thư viện và viết code của bạn bằng `<script type="module">`:
+**Buoc 2:** Import va su dung:
 
 ```html
 <script type="module">
-  import { MasaxWorkspace } from "https://cdn.jsdelivr.net/npm/typst-pdf@1.2.0/dist/masax-typst-pdf.full.js";
+  import { MasaxWorkspace } from "https://cdn.jsdelivr.net/npm/typst-pdf/dist/masax-typst-pdf.full.js";
 
   const workspace = new MasaxWorkspace(document.getElementById("workspace"), {
-    initialTemplate: `= Hóa đơn cho {{name}}`,
+    initialTemplate: `#let data = json.decode("{{DATA}}")
+= Hoa don cho #data.name`,
     initialData: { name: "Masax Studio" },
     onStatusChange: (msg) => console.log(msg),
   });
@@ -97,124 +122,105 @@ import { MasaxWorkspace, MasaxTypstPDF } from "typst-pdf";
 </script>
 ```
 
-> **Lưu ý:** `<script type="importmap">` phải đặt **trước** thẻ `<script type="module">`. Import maps được hỗ trợ bởi mọi trình duyệt hiện đại (Chrome 89+, Firefox 108+, Safari 16.4+).
-
----
-
-### Cách 3: Chạy Demo Editor tại Local (Development)
+### Cach 3: Dev Server
 
 ```bash
-# 1. Cài đặt dependencies
 npm install
-
-# 2. Khởi chạy Dev Server
 npm run dev
-
-# Mở trình duyệt tại http://localhost:3000/
+# Mo http://localhost:3000/
 ```
 
-## 📂 Giải thích các file Build
+## Build Files
 
-| File                                      | Format         | Dùng khi nào                                                            |
-| ----------------------------------------- | -------------- | ----------------------------------------------------------------------- |
-| `dist/masax-typst-pdf.js`                 | ES Module      | Dùng với Bundler (Vite/Webpack), import trực tiếp                       |
-| `dist/masax-typst-pdf.umd.cjs`            | UMD / CommonJS | Dùng với Node.js hoặc RequireJS, **không kèm** Handlebars/CodeMirror    |
-| `dist/masax-typst-pdf.full.js`            | ES Module      | Dùng cho **CDN / HTML thuần**, bundle gộp cả Handlebars & CodeMirror    |
-| `dist/masax-typst-pdf.standalone.umd.cjs` | UMD            | Dùng cho **Node.js / RequireJS**, bundle gộp cả Handlebars & CodeMirror |
+| File | Format | Muc dich |
+|---|---|---|
+| `dist/masax-typst-pdf.js` | ES Module | Dung voi Bundler (Vite/Webpack) |
+| `dist/masax-typst-pdf.standalone.umd.cjs` | UMD | Dung voi Node.js / RequireJS |
+| `dist/masax-typst-pdf.full.js` | ES Module | CDN / HTML thuan, bundle tat ca |
 
-> ✅ **Khuyến nghị cho HTML/CDN:** dùng `masax-typst-pdf.full.js` (ES Module, gộp toàn bộ dependency).  
-> ✅ **Khuyến nghị cho Project Vite/Webpack:** dùng `masax-typst-pdf.js` + `npm install typst-pdf`.
+## API
 
-## 📖 API Documentation
-
-### 1. Sử dụng Core Generator (Headless)
-
-Bạn có thể tự render PDF ngầm không cần giao diện Editor:
+### Core Generator (Headless)
 
 ```javascript
 import { MasaxTypstPDF } from "typst-pdf";
 
-async function generateInvoice() {
-  const engine = new MasaxTypstPDF();
+const engine = new MasaxTypstPDF();
 
-  // 1. Template Typst có chứa Handlebars variables
-  const template = `
-    #set text(size: 12pt)
-    = Hóa đơn cho {{customerName}}
-    Tổng tiền: {{formatCurrency total}}
-  `;
+const template = `
+#let data = json.decode("{{DATA}}")
+#set text(size: 12pt)
+= Hoa don cho #data.customerName
+Tong tien: #data.total
+`;
 
-  engine.setBlueprint(template);
+engine.setBlueprint(template);
 
-  // 2. Dữ liệu cần fill
-  const data = {
-    customerName: "Nguyễn Văn A",
-    total: 15000000,
-  };
+const pdfBlob = await engine.genPDF({
+  customerName: "Nguyen Van A",
+  total: 15000000,
+});
 
-  try {
-    // 3. Biên dịch trực tiếp ra file PDF (Blob)
-    const pdfBlob = await engine.genPDF(data);
-
-    // Preview hoặc Tải xuống
-    const objectUrl = URL.createObjectURL(pdfBlob);
-    window.open(objectUrl, "_blank");
-  } catch (err) {
-    console.error("Lỗi xuất PDF:", err);
-  }
-}
+window.open(URL.createObjectURL(pdfBlob), "_blank");
 ```
 
-### 2. Tích hợp UI Workspace (Có Live Preview)
+### injectData() — Low-level
 
-Sử dụng thư viện `MasaxWorkspace` để nhúng toàn bộ trải nghiệm Editor vào web của bạn:
+```javascript
+import { injectData, compileTypstToPdf } from "typst-pdf";
+
+// Truyen object hoac JSON string deu duoc
+const typst = injectData(template, { name: "A" });
+const typst2 = injectData(template, '{"name":"A"}');
+
+const pdfBlob = await compileTypstToPdf(typst);
+```
+
+### UI Workspace (Live Preview)
 
 ```javascript
 import { MasaxWorkspace } from "typst-pdf";
 
-// Container HTML
-const workspaceEl = document.getElementById("workspace-container");
-
-// Khởi tạo Editor
-const workspace = new MasaxWorkspace(workspaceEl, {
-  initialTemplate: "= Xin chào {{name}}",
-  initialData: { name: "Thế Giới" },
-  onStatusChange: (msg) => console.log("Status:", msg),
+const workspace = new MasaxWorkspace(document.getElementById("workspace"), {
+  initialTemplate: `#let data = json.decode("{{DATA}}")
+= Xin chao #data.name`,
+  initialData: { name: "Masax" },
+  onStatusChange: (msg) => console.log(msg),
 });
 
-// Nút bấm xuất file PDF
-document.getElementById("btn-export").onclick = async () => {
-  const pdfBlob = await workspace.exportPDF();
-  // Use the pdfBlob ...
-};
+// Export PDF
+const pdfBlob = await workspace.exportPDF();
 
-// Cập nhật lại dữ liệu mẫu (Live Preview sẽ tự render lại)
-workspace.updateData({ name: "Masax" });
+// Cap nhat data (preview tu render lai)
+workspace.updateData({ name: "World" });
 
-// Lấy Blueprint (JSON) để lưu trữ
-const blueprint = workspace.getBlueprint();
-
-// Load Blueprint từ JSON đã lưu
-workspace.loadBlueprint(blueprint);
+// Blueprint save/load
+const bp = workspace.getBlueprint();
+workspace.loadBlueprint(bp);
 ```
 
-## 🛠 Hướng dẫn Build
+## VS Code Extension
+
+Cai extension **Masax Typst PDF Editor** tu Marketplace hoac build tu source:
 
 ```bash
-# Build tất cả các target cùng lúc (Cập nhật thư mục /dist)
+cd typst-pdf-vscode
+npm run package
+# Ctrl+Shift+P → "Install from VSIX"
+```
+
+Xem [typst-pdf-vscode/README.md](typst-pdf-vscode/README.md) de biet chi tiet.
+
+## Build
+
+```bash
+# Build tat ca
 npm run build
 
-# Build và copy sang thư mục docs để deploy lên GitHub Pages
-npm run build ; if ($?) { Copy-Item -Path ".\dist\*.js", ".\dist\*.cjs" -Destination ".\docs\lib\" -Force }
+# Copy sang docs
+cp dist/*.js docs/lib/
 ```
 
-## Hướng dẫn cập nhật extension visual code
-
-```bash
-npm install -g yo generator-code
-npm install -g yo generator-code
-```
-
-## 📝 License
+## License
 
 MIT

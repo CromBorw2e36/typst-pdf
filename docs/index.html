@@ -114,41 +114,134 @@
     <script type="module">
       import { MasaxWorkspace } from "./lib/masax-typst-pdf.full.js";
 
-      const initialTemplate = `#set page(paper: "a4", margin: 2cm)
-      #set text(size: 12pt)
+      const initialTemplate = `// Typst-native data injection
+#let data = json.decode("` + "{{DATA}}" + `")
 
-      = Hoá đơn dịch vụ
+// Helper: format tien VND
+#let fmt-currency(value) = {
+  if value == none or value == 0 { "0 \\u{20AB}" }
+  else {
+    let n = int(value)
+    let s = str(n)
+    let parts = ()
+    let i = s.len()
+    while i > 0 {
+      let start = calc.max(0, i - 3)
+      parts.push(s.slice(start, i))
+      i = start
+    }
+    parts.rev().join(".") + " \\u{20AB}"
+  }
+}
 
-      *Khách hàng:* {{name}} \\
-      *Ngày:* {{date}}
+#set page(paper: "a4", margin: 2cm)
+#set text(size: 11pt, font: "Arial", lang: "vi")
 
-      #v(8mm)
+// === HEADER ===
+#align(center)[
+  #text(size: 18pt, weight: "bold")[PHIEU DANH GIA UNG VIEN]
+  #v(4mm)
+  #text(size: 10pt, fill: rgb("#666"))[Ngay: #data.at("date", default: "")]
+]
 
-      #table(
-        columns: (1fr, auto, auto),
-        fill: (x, y) => if y == 0 { luma(220) } else { white },
-        table.header(
-          [*Dịch vụ*], [*Đơn giá*], [*SL*],
-        ),
-        {{#each items}}[{{name}}], [{{formatCurrency price}}], [{{qty}}],
-        {{/each}}
-      )
+#v(8mm)
 
-      #v(8mm)
+// === THONG TIN UNG VIEN ===
+#text(size: 13pt, weight: "bold")[1. Thong tin ung vien]
+#v(2mm)
 
-      #align(right)[
-        *Tổng cộng:* *{{formatCurrency total}}*
-      ]`;
+#table(
+  columns: (30%, 70%),
+  stroke: 0.5pt,
+  align: left + horizon,
+  [*Ho ten*], [#data.at("candidate", default: (:)).at("name", default: "")],
+  [*Vi tri*], [#data.at("candidate", default: (:)).at("position", default: "")],
+  [*Email*], [#data.at("candidate", default: (:)).at("email", default: "")],
+  [*SDT*], [#data.at("candidate", default: (:)).at("phone", default: "")],
+)
+
+#v(6mm)
+
+// === DANH GIA ===
+#text(size: 13pt, weight: "bold")[2. Danh gia]
+#v(2mm)
+
+#table(
+  columns: (40%, 40%, 20%),
+  stroke: 0.5pt,
+  align: (left + horizon, left + horizon, center + horizon),
+  table.header(
+    [*Tieu chi*], [*Nhan xet*], [*Diem (0-10)*],
+  ),
+  ..data.at("evaluations", default: ()).map(e => (
+    [#e.at("criteria", default: "")],
+    [#e.at("comment", default: "")],
+    [#e.at("score", default: "")],
+  )).flatten(),
+)
+
+// === TONG KET ===
+#v(4mm)
+#let scores = data.at("evaluations", default: ()).map(e => e.at("score", default: 0))
+#let total = scores.sum(default: 0)
+#let avg = if scores.len() > 0 { calc.round(total / scores.len(), digits: 1) } else { 0 }
+
+#align(right)[
+  *Tong diem:* #total / #(scores.len() * 10) |
+  *Trung binh:* #avg / 10
+]
+
+#v(4mm)
+#if avg >= 7 [
+  #text(fill: rgb("#198754"), weight: "bold")[KET QUA: DAT]
+] else if avg >= 5 [
+  #text(fill: rgb("#fd7e14"), weight: "bold")[KET QUA: CAN XEM XET]
+] else [
+  #text(fill: rgb("#dc3545"), weight: "bold")[KET QUA: KHONG DAT]
+]
+
+#v(10mm)
+
+// === LUONG DE XUAT ===
+#if data.at("salary", default: none) != none [
+  *Luong de xuat:* #fmt-currency(data.salary)
+]
+
+#v(16mm)
+
+// === CHU KY ===
+#grid(
+  columns: (1fr, 1fr),
+  align: center,
+  [
+    *Nguoi phong van* \
+    #v(2cm)
+    #data.at("interviewer", default: "")
+  ],
+  [
+    *Quan ly phe duyet* \
+    #v(2cm)
+    #data.at("approver", default: "")
+  ],
+)`;
 
       const sampleData = {
-        name: "Masax Studio",
         date: new Date().toLocaleDateString("vi-VN"),
-        items: [
-          { name: "Thiết kế Giao diện Web", price: 15000000, qty: 1 },
-          { name: "Typst PDF Generator", price: 8000000, qty: 1 },
-          { name: "Hosting 1 năm", price: 1200000, qty: 1 },
+        candidate: {
+          name: "Nguyen Van A",
+          position: "Frontend Developer",
+          email: "nguyenvana@email.com",
+          phone: "0901234567",
+        },
+        evaluations: [
+          { criteria: "Ky nang chuyen mon", comment: "Thanh thao React, TypeScript", score: 8 },
+          { criteria: "Kinh nghiem", comment: "3 nam lam viec", score: 7 },
+          { criteria: "Giao tiep", comment: "Trinh bay ro rang", score: 9 },
+          { criteria: "Lam viec nhom", comment: "Hop tac tot", score: 8 },
         ],
-        total: 24200000,
+        salary: 25000000,
+        interviewer: "Tran Van B",
+        approver: "Le Thi C",
       };
 
       const statusMsg = document.getElementById("status-msg");

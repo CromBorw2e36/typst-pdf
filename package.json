@@ -1,7 +1,7 @@
 {
   "name": "typst-pdf",
   "version": "1.2.0",
-  "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, Handlebars templates and Vietnamese support",
+  "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, JSON data injection and cross-platform support",
   "type": "module",
   "main": "dist/typst-pdf.umd.cjs",
   "module": "dist/typst-pdf.js",
@@ -55,7 +55,6 @@
     "@myriaddreamin/typst-ts-renderer": "^0.7.0-rc2",
     "@myriaddreamin/typst-ts-web-compiler": "^0.7.0-rc2",
     "@myriaddreamin/typst.ts": "^0.7.0-rc2",
-    "codemirror": "^6.0.2",
-    "handlebars": "^4.7.8"
+    "codemirror": "^6.0.2"
   }
 }
