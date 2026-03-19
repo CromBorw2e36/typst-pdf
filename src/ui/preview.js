@@ -18,19 +18,32 @@ export class TypstPreview {
         try {
             this.generator.loadBlueprint({ typstTemplate: template });
 
-            // Lấy kết quả SVG
-            const svgContent = await this.generator.generateSVG(data);
+            // Lấy kết quả SVG (mảng pages)
+            const pages = await this.generator.generateSVG(data);
 
-            // Sanitize SVG trước khi render để tránh XSS
-            const sanitized = this._sanitizeSvg(svgContent);
-            this.parentElement.innerHTML = sanitized;
+            // Render từng page với separator
+            this.parentElement.innerHTML = '';
+            const pageArray = Array.isArray(pages) ? pages : [pages];
+            pageArray.forEach((pageSvg, i) => {
+                const sanitized = this._sanitizeSvg(pageSvg);
+                const pageContainer = document.createElement('div');
+                pageContainer.style.cssText = 'position:relative; margin-bottom:24px;';
+                pageContainer.innerHTML = sanitized;
 
-            // Style cho các page SVG nằm giữa
-            const svgs = this.parentElement.querySelectorAll('svg');
-            svgs.forEach(svg => {
-                svg.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-                svg.style.marginBottom = '20px';
-                svg.style.backgroundColor = '#fff';
+                const svg = pageContainer.querySelector('svg');
+                if (svg) {
+                    svg.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                    svg.style.backgroundColor = '#fff';
+                    svg.style.display = 'block';
+                }
+
+                // Page label
+                const label = document.createElement('div');
+                label.textContent = `Page ${i + 1} / ${pageArray.length}`;
+                label.style.cssText = 'text-align:center; font-size:0.75rem; color:#888; margin-top:4px; margin-bottom:8px;';
+                pageContainer.appendChild(label);
+
+                this.parentElement.appendChild(pageContainer);
             });
 
         } catch (error) {

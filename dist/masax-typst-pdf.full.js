@@ -11,7 +11,7 @@ const vo = new Xc();
 let ko = !1, qs = null;
 const Qc = "https://cdn.jsdelivr.net/npm", Zc = "0.7.0-rc2";
 function ki(n, e) {
-  return window.location.protocol !== "file:" && !window.location.href.includes("localhost") && !window.location.href.includes("127.0.0.1") ? `${Qc}/${n}@${Zc}/${e}` : `/node_modules/${n}/${e}`;
+  return `${Qc}/${n}@${Zc}/${e}`;
 }
 async function ra(n) {
   const e = await fetch(n);
@@ -117,12 +117,12 @@ async function sf(n, e = []) {
   let i;
   try {
     i = await la(n);
-  } catch (r) {
-    console.warn("MasaxTypst: Image resolution failed, compiling without images.", r.message || r), i = n;
+  } catch (o) {
+    console.warn("MasaxTypst: Image resolution failed, compiling without images.", o.message || o), i = n;
   }
   console.info("MasaxTypst: Compiling Typst → SVG...");
-  const s = await t.svg({ mainContent: i });
-  return console.info("MasaxTypst: SVG compilation complete."), Array.isArray(s) ? s.join("") : s || "";
+  const s = await t.svg({ mainContent: i }), r = Array.isArray(s) ? s : [s || ""];
+  return console.info(`MasaxTypst: SVG compilation complete. ${r.length} page(s).`), r;
 }
 class rf {
   /**
@@ -16957,9 +16957,16 @@ class my {
   async renderPreview(e, t = {}) {
     try {
       this.generator.loadBlueprint({ typstTemplate: e });
-      const i = await this.generator.generateSVG(t), s = this._sanitizeSvg(i);
-      this.parentElement.innerHTML = s, this.parentElement.querySelectorAll("svg").forEach((o) => {
-        o.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)", o.style.marginBottom = "20px", o.style.backgroundColor = "#fff";
+      const i = await this.generator.generateSVG(t);
+      this.parentElement.innerHTML = "";
+      const s = Array.isArray(i) ? i : [i];
+      s.forEach((r, o) => {
+        const l = this._sanitizeSvg(r), a = document.createElement("div");
+        a.style.cssText = "position:relative; margin-bottom:24px;", a.innerHTML = l;
+        const h = a.querySelector("svg");
+        h && (h.style.boxShadow = "0 4px 8px rgba(0,0,0,0.1)", h.style.backgroundColor = "#fff", h.style.display = "block");
+        const c = document.createElement("div");
+        c.textContent = `Page ${o + 1} / ${s.length}`, c.style.cssText = "text-align:center; font-size:0.75rem; color:#888; margin-top:4px; margin-bottom:8px;", a.appendChild(c), this.parentElement.appendChild(a);
       });
     } catch (i) {
       console.error("MasaxTypst: Preview Render Error:", i);

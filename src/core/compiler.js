@@ -13,14 +13,10 @@ let typstSnippet = null;
 const CDN_BASE = 'https://cdn.jsdelivr.net/npm';
 const TYPST_VERSION = '0.7.0-rc2';
 
-// Hàm helper để xác định base URL (local dev vs production/CDN)
+// Hàm helper để xác định base URL
+// Luôn dùng CDN — không fallback node_modules vì không hoạt động trên IIS/.NET/non-Vite server
 function getBaseUrl(pkgName, localPath) {
-    // Nếu đang chạy trong môi trường có import map (như CDN demo) hoặc URL production
-    if (window.location.protocol !== 'file:' && !window.location.href.includes('localhost') && !window.location.href.includes('127.0.0.1')) {
-        return `${CDN_BASE}/${pkgName}@${TYPST_VERSION}/${localPath}`;
-    }
-    // Fallback cho local (phụ thuộc Vite/dev server)
-    return `/node_modules/${pkgName}/${localPath}`;
+    return `${CDN_BASE}/${pkgName}@${TYPST_VERSION}/${localPath}`;
 }
 
 async function loadWasmBinary(url) {
@@ -244,6 +240,8 @@ export async function compileTypstToSvg(content, extraFonts = []) {
 
     console.info("MasaxTypst: Compiling Typst → SVG...");
     const result = await $typst.svg({ mainContent: resolvedContent });
-    console.info("MasaxTypst: SVG compilation complete.");
-    return Array.isArray(result) ? result.join('') : (result || '');
+    const pages = Array.isArray(result) ? result : [result || ''];
+    console.info(`MasaxTypst: SVG compilation complete. ${pages.length} page(s).`);
+    // Trả về mảng các page SVG — caller tự quyết định cách render (join hay separator)
+    return pages;
 }
