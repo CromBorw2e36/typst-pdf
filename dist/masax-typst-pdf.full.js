@@ -11,6 +11,9 @@ const vo = new Xc();
 let ko = !1, qs = null;
 const Qc = "https://cdn.jsdelivr.net/npm", Zc = "0.7.0-rc2";
 function ki(n, e) {
+  try {
+  } catch {
+  }
   return `${Qc}/${n}@${Zc}/${e}`;
 }
 async function ra(n) {

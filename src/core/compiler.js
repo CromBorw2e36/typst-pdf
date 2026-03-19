@@ -14,8 +14,14 @@ const CDN_BASE = 'https://cdn.jsdelivr.net/npm';
 const TYPST_VERSION = '0.7.0-rc2';
 
 // Hàm helper để xác định base URL
-// Luôn dùng CDN — không fallback node_modules vì không hoạt động trên IIS/.NET/non-Vite server
+// - Vite dev server (npm run dev): dùng node_modules qua Vite's module resolution
+// - Production build / CDN / IIS / .NET: luôn dùng CDN
 function getBaseUrl(pkgName, localPath) {
+    try {
+        if (import.meta.env?.DEV) {
+            return `/node_modules/${pkgName}/${localPath}`;
+        }
+    } catch (_) { /* not in Vite env */ }
     return `${CDN_BASE}/${pkgName}@${TYPST_VERSION}/${localPath}`;
 }
 

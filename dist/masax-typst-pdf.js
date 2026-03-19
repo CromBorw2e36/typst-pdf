@@ -14,6 +14,9 @@ const u = new P();
 let w = !1, f = null;
 const _ = "https://cdn.jsdelivr.net/npm", $ = "0.7.0-rc2";
 function d(s, t) {
+  try {
+  } catch {
+  }
   return `${_}/${s}@${$}/${t}`;
 }
 async function x(s) {
