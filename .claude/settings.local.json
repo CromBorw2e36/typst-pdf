@@ -9,7 +9,16 @@
       "Bash(npm run:*)",
       "Bash(npx @vscode/vsce package --no-dependencies)",
       "Bash(npm ls:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(node -e \"const hbs = require\\(''handlebars''\\); console.log\\(''Handlebars OK:'', hbs.VERSION\\)\")",
+      "Bash(node -e \"try { require\\(''./out/extension''\\); console.log\\(''Extension loaded OK''\\); } catch\\(e\\) { console.error\\(''LOAD ERROR:'', e.message\\); }\")",
+      "Bash(ls \"k:/Project/Sub/draw-pdf/typst-pdf-vscode/\"*.vsix)",
+      "Bash(code --list-extensions)",
+      "Bash(code --install-extension \"k:/Project/Sub/draw-pdf/typst-pdf-vscode/typst-pdf-vscode-0.0.1.vsix\" --force)",
+      "Bash(curl -sL https://cdn.jsdelivr.net/npm/@myriaddreamin/typst-ts-web-compiler@0.7.0-rc2/pkg/typst_ts_web_compiler.mjs)",
+      "Bash(curl -sL https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/contrib/snippet.mjs)",
+      "Bash(curl -L https://cdn.jsdelivr.net/npm/@myriaddreamin/typst.ts@0.7.0-rc2/dist/esm/contrib/snippet.mjs)",
+      "Bash(grep -r \"svg\\\\|SVG\" k:/Project/Sub/draw-pdf/src --include=*.js --include=*.ts)"
     ]
   }
 }

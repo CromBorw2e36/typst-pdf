@@ -12,6 +12,7 @@ let typstSnippet = null;
 // Cấu hình URL mặc định (hỗ trợ CDN jsDelivr khi không có node_modules)
 const CDN_BASE = 'https://cdn.jsdelivr.net/npm';
 const TYPST_VERSION = '0.7.0-rc2';
+const WASM_CACHE_NAME = 'masax-typst-wasm-v1';
 
 // Hàm helper để xác định base URL
 // - Vite dev server (npm run dev): dùng node_modules qua Vite's module resolution
@@ -25,11 +26,55 @@ function getBaseUrl(pkgName, localPath) {
     return `${CDN_BASE}/${pkgName}@${TYPST_VERSION}/${localPath}`;
 }
 
+/**
+ * Load WASM binary với Cache API - lần đầu download từ CDN, lần sau lấy từ cache.
+ * WASM compiler ~9 MB nên cache giúp tiết kiệm ~15s cho các lần load sau.
+ */
 async function loadWasmBinary(url) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Failed to fetch WASM: ${url}`);
-    return await response.arrayBuffer();
+    // Thử lấy từ cache trước
+    try {
+        const cache = await caches.open(WASM_CACHE_NAME);
+        const cached = await cache.match(url);
+        if (cached) {
+            console.info(`MasaxTypst: WASM cache hit → ${url.split('/').pop()}`);
+            return await cached.arrayBuffer();
+        }
+        // Cache miss → fetch và lưu cache
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch WASM: ${url}`);
+        // Clone response vì body chỉ đọc được 1 lần
+        cache.put(url, response.clone());
+        console.info(`MasaxTypst: WASM cached → ${url.split('/').pop()}`);
+        return await response.arrayBuffer();
+    } catch (cacheErr) {
+        // Fallback nếu Cache API không available (HTTP, iframe sandboxed, etc.)
+        console.warn('MasaxTypst: Cache API unavailable, fetching directly.', cacheErr.message);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch WASM: ${url}`);
+        return await response.arrayBuffer();
+    }
 }
+
+// Preload WASM sớm nhất có thể - inject <link rel="preload"> ngay khi module được import
+// Browser sẽ bắt đầu download WASM song song với các JS module khác
+try {
+    if (typeof document !== 'undefined' && !import.meta.env?.DEV) {
+        const wasmFiles = [
+            `${CDN_BASE}/@myriaddreamin/typst-ts-web-compiler@${TYPST_VERSION}/pkg/typst_ts_web_compiler_bg.wasm`,
+            `${CDN_BASE}/@myriaddreamin/typst-ts-renderer@${TYPST_VERSION}/pkg/typst_ts_renderer_bg.wasm`,
+        ];
+        for (const url of wasmFiles) {
+            if (!document.querySelector(`link[href="${url}"]`)) {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.href = url;
+                link.as = 'fetch';
+                link.crossOrigin = 'anonymous';
+                document.head.appendChild(link);
+            }
+        }
+    }
+} catch (_) { /* SSR or non-browser env */ }
 
 async function setupRendererWasm() {
     // Import module JS (không WASM)
