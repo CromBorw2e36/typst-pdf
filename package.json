@@ -1,6 +1,6 @@
 {
   "name": "typst-pdf",
-  "version": "1.3.0",
+  "version": "1.5.0",
   "description": "Typst PDF Generator and Editor - Typst to PDF with WASM compiler, JSON data injection and cross-platform support",
   "type": "module",
   "main": "dist/typst-pdf.umd.cjs",

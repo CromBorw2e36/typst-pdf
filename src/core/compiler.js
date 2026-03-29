@@ -13,6 +13,7 @@ let typstSnippet = null;
 const CDN_BASE = 'https://cdn.jsdelivr.net/npm';
 const TYPST_VERSION = '0.7.0-rc2';
 const WASM_CACHE_NAME = 'masax-typst-wasm-v1';
+const FONT_CACHE_NAME = 'masax-typst-fonts-v1';
 
 // Hàm helper để xác định base URL
 // - Vite dev server (npm run dev): dùng node_modules qua Vite's module resolution
@@ -130,6 +131,32 @@ export async function initCompiler() {
         const snippetMod = await import(/* @vite-ignore */ snippetUrl);
         
         typstSnippet = snippetMod.$typst;
+        const TypstSnippet = snippetMod.TypstSnippet || typstSnippet.constructor;
+
+        // Cấu hình cached fetcher cho font loading (~5 MB font mặc định)
+        // Thay vì mỗi lần load page đều fetch 17 font files từ CDN,
+        // dùng Cache API để cache lại → lần sau gần instant
+        if (TypstSnippet?.preloadFontAssets && typeof caches !== 'undefined') {
+            const cachedFontFetcher = async (input, init) => {
+                const url = typeof input === 'string' ? input : input.url;
+                try {
+                    const cache = await caches.open(FONT_CACHE_NAME);
+                    const cached = await cache.match(url);
+                    if (cached) return cached;
+                    const response = await fetch(input, init);
+                    if (response.ok) cache.put(url, response.clone());
+                    return response;
+                } catch (_) {
+                    return fetch(input, init);
+                }
+            };
+            typstSnippet.use(TypstSnippet.preloadFontAssets({
+                assets: ['text'],
+                fetcher: cachedFontFetcher,
+            }));
+            console.info("MasaxTypst: Font caching enabled.");
+        }
+
         initialized = true;
         console.info("MasaxTypst: WASM Compiler & Renderer ready.");
     } catch (err) {
